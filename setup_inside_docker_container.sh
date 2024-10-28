@@ -8,7 +8,7 @@ version=1.7.3
 
 # Target game zip to be download and extracted
 DIR_WORKSPACES="" #CRUCIAL
-DIR_WORKSPACES_HOME=$DIR_WORKSPACES/home
+DIR_WORKSPACES_HOME="${DIR_WORKSPACES}/home"
 URL_DOWNLOAD="https://drive.usercontent.google.com/download?id=1UebfhrwJIWfP5cZvdra1tNWVZb8Is9PE&export=download&authuser=0&confirm=t&uuid=5c5a1d80-c934-4688-a7a9-6630f844de42"
 
 # Define database configuration
@@ -24,7 +24,7 @@ pwAdminEmail="admin@gmail.com"
 
 # Common variables
 currentSQLDate=$(date +'%F %T');
-logfile="$DIR_WORKSPACES_HOME/setup.log"
+logfile="${DIR_WORKSPACES_HOME}/setup.log"
 now=$(date +%Y%m%d_%H%M%S)
 startTime=$(date +%s)
 pwAdminPasswordHashBase64=""
@@ -69,9 +69,9 @@ function installSeverPackages(){
     apt update
     apt-get update
     apt install -y sudo
-    apt install -y dialog apt-utils > /dev/null 2>&1
-    apt install -y mc nano wget curl sed bash grep locales dpkg net-tools iputils-ping > /dev/null 2>&1
-    apt install -y p7zip-full > /dev/null 2>&1
+    apt install -y dialog apt-utils > "$logfile" 2>&1
+    apt install -y mc nano wget curl sed bash grep locales dpkg net-tools iputils-ping > "$logfile" 2>&1
+    apt install -y p7zip-full > "$logfile" 2>&1
 
     # This is a tool to download specific folders from a Github repository.
     curl -sSLfo ./fetch https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64
@@ -85,16 +85,16 @@ function installSeverPackages(){
 
 function installDevPackages(){
 
-    apt install -y default-jre > /dev/null 2>&1
-    apt install -y mariadb-server > /dev/null 2>&1
+    apt install -y default-jre > "$logfile" 2>&1
+    apt install -y mariadb-server > "$logfile" 2>&1
     
     # TODO: install java 6
-    chmod 777 $DIR_WORKSPACES_HOME/jdk-6u45-linux-x64.bin
-    $DIR_WORKSPACES_HOME/jdk-6u45-linux-x64.bin
-    mv jdk1.6.0_45 $DIR_WORKSPACES_HOME
+    chmod 777 "${DIR_WORKSPACES_HOME}"/jdk-6u45-linux-x64.bin
+    "${DIR_WORKSPACES_HOME}"/jdk-6u45-linux-x64.bin
+    mv jdk1.6.0_45 "${DIR_WORKSPACES_HOME}"
 
-    apt install -y libtask64 libpangoxft-1.0-0 libgtk2.0-0 libpcre3 libstdc++5 libxml2 libkrb5-3 libssl1.0.0 libdb4.2 gcc-multilib zlib1g libc6 libstdc++6 > /dev/null 2>&1
-    apt install -y libc6:i386 libncurses5:i386 libstdc++5:i386 libstdc++6:i386 libxml2:i386 libpcre3:i386 libgtk2.0-0:i386 libpangoxft-1.0-0:i386 libpangox-1.0-0:i386 libidn11:i386 gstreamer0.10-pulseaudio:i386 gstreamer0.10-plugins-base:i386 gstreamer0.10-plugins-good:i386 gstreamer0.10-ffmpeg:i386 zlib1g:i386 > /dev/null 2>&1
+    apt install -y libtask64 libpangoxft-1.0-0 libgtk2.0-0 libpcre3 libstdc++5 libxml2 libkrb5-3 libssl1.0.0 libdb4.2 gcc-multilib zlib1g libc6 libstdc++6 > "$logfile" 2>&1
+    apt install -y libc6:i386 libncurses5:i386 libstdc++5:i386 libstdc++6:i386 libxml2:i386 libpcre3:i386 libgtk2.0-0:i386 libpangoxft-1.0-0:i386 libpangox-1.0-0:i386 libidn11:i386 gstreamer0.10-pulseaudio:i386 gstreamer0.10-plugins-base:i386 gstreamer0.10-plugins-good:i386 gstreamer0.10-ffmpeg:i386 zlib1g:i386 > "$logfile" 2>&1
 
 }
 
@@ -132,15 +132,16 @@ user=root
 
 function downloadGameServer(){
 
-    chmod 777 -R $DIR_WORKSPACES
-    wget -c $URL_DOWNLOAD -O $DIR_WORKSPACES/pw.7z
+    chmod 777 -R "${DIR_WORKSPACES}"
+    wget -c $URL_DOWNLOAD -O "${DIR_WORKSPACES}/pw.7z"
 }
 
 function extractGameServer(){
 
-    7z x -aoa $DIR_WORKSPACES/pw.7z -sccutf-8 -scsutf-8 -o$DIR_WORKSPACES
-    chmod 777 -R $DIR_WORKSPACES
-    rm -f $DIR_WORKSPACES/pw.7z
+    7z x -aoa "${DIR_WORKSPACES}/pw.7z" -sccutf-8 -scsutf-8 -o"$DIR_WORKSPACES" > "$logfile" 2>&1
+    rm -f "${DIR_WORKSPACES}/pw.7z"
+
+    chmod 777 -R "${DIR_WORKSPACES}"
 
     # TODO: scan and check folder structure
 
@@ -153,7 +154,7 @@ function setupDb() {
     pwAdminPasswordSalt=$(echo "${pwAdminUsername}${pwAdminRawPw}" | tr '[:upper:]' '[:lower:]')
     pwAdminPasswordHashBase64=$(echo -n "$pwAdminPasswordSalt" | openssl dgst -md5 -binary | base64)
 
-    wget -c https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/master/pwa.sql -O "$DIR_WORKSPACES/pw.sql"
+    wget -c https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/main/pwa.sql -O "$DIR_WORKSPACES/pw.sql"
 
     service mariadb start
 
@@ -175,8 +176,8 @@ EOF
         CREATE DATABASE $dbName CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 EOF
 
-    mariadb -u"$dbUser" -p"$dbPassword" "$dbName" < "$DIR_WORKSPACES/pw.sql"
-    rm "$DIR_WORKSPACES/pw.sql"
+    mariadb -u"$dbUser" -p"$dbPassword" "$dbName" < "${DIR_WORKSPACES}/pw.sql"
+    rm "${DIR_WORKSPACES}/pw.sql"
 
     mariadb -u"$dbUser" -p"$dbPassword" "$dbName" <<EOF
         CALL adduser("$pwAdminUsername", "$pwAdminPasswordHashBase64", "0", "0", "super admin", "0.0.0.0", "$pwAdminEmail", "0", "0", "0", "0", "0", "0", "0", "$currentSQLDate", " ", "$pwAdminPasswordHashBase64");
@@ -231,37 +232,37 @@ function setupIwebJava(){
     # TODO: nên cài tomcat vào opt/tomcat. Thay vì đang để chung 1 đống với game như hiện tại.
     # Tomcat 7.0.108. 
     wget https://archive.apache.org/dist/tomcat/tomcat-7/v7.0.108/bin/apache-tomcat-7.0.108.tar.gz -P /tmp/$now/
-    sudo tar xf /tmp/$now/apache-tomcat-7.0.108.tar.gz -C $DIR_WORKSPACES_HOME/tomcat
+    sudo tar xf /tmp/$now/apache-tomcat-7.0.108.tar.gz -C "${DIR_WORKSPACES_HOME}"/tomcat
     rm /tmp/$now/apache-tomcat-7.0.108.tar.gz
 
     # java version "1.7.0_80". apt-get install openjdk-8-jdk
     # apt-get install openjdk-8-jdk
 
     # Use my pwadmin (iweb)
-    rm -rf $DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin
-    ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="master" --source-path="/pwadmin" $DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin
+    rm -rf "${DIR_WORKSPACES_HOME}"/pwadmin/webapps/pwadmin
+    ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/pwadmin" "${DIR_WORKSPACES_HOME}"/pwadmin/webapps/pwadmin
 
     # Override file /home/server: DB connection; [pwadmin] web tool location; and other info. Replace the line that starts with a text with another text
-    sed -i "/^# Last Updated:/c\# Last Updated: $(date +'%Y/%m/%d')" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^# Require:/c\# Require: Perfect World server v$version" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^ServerDir=/c\ServerDir=$DIR_WORKSPACES_HOME" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^USR=/c\USR=$dbUser" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^PASSWD=/c\PASSWD=$dbPassword" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^DB=/c\DB=$dbName" "$DIR_WORKSPACES_HOME/server"
-    sed -i "/^pwAdmin_dir=/c\pwAdmin_dir=$DIR_WORKSPACES_HOME/pwadmin/bin" "$DIR_WORKSPACES_HOME/server"
+    sed -i "/^# Last Updated:/c\# Last Updated: $(date +'%Y/%m/%d')" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^# Require:/c\# Require: Perfect World server v$version" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^ServerDir=/c\ServerDir=${DIR_WORKSPACES_HOME}" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^USR=/c\USR=$dbUser" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^PASSWD=/c\PASSWD=$dbPassword" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^DB=/c\DB=$dbName" "${DIR_WORKSPACES_HOME}/server"
+    sed -i "/^pwAdmin_dir=/c\pwAdmin_dir=${DIR_WORKSPACES_HOME}/pwadmin/bin" "${DIR_WORKSPACES_HOME}/server"
 
     # Override file /home/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp: DB connection; game location; MD5 of iweb password.
     iwebPasswordSalt=$(echo "${pwAdminRawPw}" | tr '[:upper:]' '[:lower:]')
     iwebPasswordHashBase64=$(echo -n "$pwAdminRawPw" | openssl dgst -md5 -binary | base64)
-    sed -i "/String db_host = /c\String db_host = \"$dbHost\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
-    sed -i "/String db_user = /c\String db_user = \"$dbUser\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
-    sed -i "/String db_password = /c\String db_password = \"$dbPassword\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
-    sed -i "/String db_database = /c\String db_database = \"$dbName\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
-    sed -i "/String iweb_password = /c\String iweb_password = \"$iwebPasswordHashBase64\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
-    sed -i "/String pw_server_path = /c\String pw_server_path = \"$DIR_WORKSPACES_HOME/\";" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String db_host = /c\String db_host = \"$dbHost\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String db_user = /c\String db_user = \"$dbUser\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String db_password = /c\String db_password = \"$dbPassword\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String db_database = /c\String db_database = \"$dbName\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String iweb_password = /c\String iweb_password = \"$iwebPasswordHashBase64\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
+    sed -i "/String pw_server_path = /c\String pw_server_path = \"${DIR_WORKSPACES_HOME}/\";" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/WEB-INF/.pwadminconf.jsp"
 
     # Override file /home/pwadmin/webapps/pwadmin/addons/Top Players - Manual Refresh/index.jsp: DB connection. Replace the line that contains a text with a whole new line
-    sed -i "/connection = DriverManager.getConnection(/c\connection = DriverManager.getConnection(\"jdbc:mysql://$dbHost:3306/$dbName?useUnicode=true&characterEncoding=utf8\", \"$dbUser\", \"$db_password\");" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/addons/Top Players - Manual Refresh/index.jsp"
+    sed -i "/connection = DriverManager.getConnection(/c\connection = DriverManager.getConnection(\"jdbc:mysql://$dbHost:3306/$dbName?useUnicode=true&characterEncoding=utf8\", \"$dbUser\", \"$db_password\");" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/addons/Top Players - Manual Refresh/index.jsp"
 
 }
 
@@ -348,120 +349,120 @@ no,arena03,Đấu trường Tích Vũ Thành
 no,arena04,Đấu trường Tổ Long Thành
 no,rand03,Huyễn Sa Thận Cảnh
 no,rand04,Mê Sa Huyễn Cảnh
-" > "$DIR_WORKSPACES_HOME/maps"
+" > "${DIR_WORKSPACES_HOME}/maps"
 
 }
 
 function translateIwebIntoVietnamese() {
 
-    sed -i '1i <%@page contentType="text/html; charset=UTF-8" %>' "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp" #to display UTF-8
+    sed -i '1i <%@page contentType="text/html; charset=UTF-8" %>' "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp" #to display UTF-8
 
     # Replace a text with another text
-    sed -i "s#City of Abominations#Minh Thú Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Secret Passage#Anh Hùng Trủng#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Firecrag Grotto#Hỏa Nham Động Huyệt#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Den of Rabid Wolves#Cuồng Lang Sào Huyệt#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Cave of the Vicious#Xà Hạt Động#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Hall of Deception#Thanh Y Trủng#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Gate of Delirium#U Minh Cư#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Secret Frostcover Grounds#Lí Sương Bí Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Valley of Disaster#Thiên Kiếp Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Forest Ruins#Tùng Lâm Di Tích#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Cave of Sadistic Glee#Quỷ Vực Huyễn Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Wraithgate#Oán Linh Chi Môn#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Hallucinatory Trench#Bí Bảo Quật#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Eden#Tiên Huyễn Thiên#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Brimstone Pit#Ma Huyễn Thiên#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Temple of the Dragon#Long Cung#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nightscream Island#Dạ Khốc Đảo#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Snake Isle#Vạn Xà Đảo#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Lothranis#Tiên giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Momaganon#Ma giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Seat of Torment#Thiên Giới Luyện Ngục#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Abaddon#Ma Vực Đào Nguyên#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Warsong City#Chiến Ca Chi Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Palace of Nirvana#Luân Hồi Điện#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Lunar Glade#Thần Nguyệt Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Valley of Reciprocity#Thần Vô Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Frostcover City#Phúc Sương Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Twilight Temple#Hoàng Hôn Thánh Điện#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Cube of Fate#Vận Mệnh Ma Phương#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Chrono City#Thiên Lệ Chi Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Perfect Chapel#Khung cảnh Hôn Lễ#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Guild Base#Phụ bản Bang Phái#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Morai#Bồng Lai Huyễn Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Phoenix Valley#Phượng Minh Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Endless Universe#Vô Định Trụ#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Blighted Chamer#Thần Độc Chi Gian#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Endless Universe#Vô ĐỊnh Trụ-mô thức cấp cao#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Wargod Gulch#Chiến Thần Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Five Emperors#Ngũ Đế Chi Đô#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nation War 2#Quốc Chiến-Cô Đảo Đoạt Kì#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nation Wa TOWER#Quốc Chiến-Thủy Tinh Tranh Đoạt#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nation War CRYSTAL#Quốc Chiến-Đoạn Kiều Đối Trì#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Sunset Valley#Lạc Nhật Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Shutter Palace#Bất Xá Đường#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Dragon Hidden Den#Long Ẩn Quật#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Realm of Reflection#Linh Đàn Huyễn Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#startpoint#Linh Độ Đinh Châu#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Origination#Khung Thế Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Primal World#Nhân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Flowsilver Palace#Lưu Ngân Cung#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Undercurrent Hall#Phục Ba Đường#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Mortal Realm#Mô thức Câu chuyện Nhân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#LightSail Cave#Bồng Minh Động#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Cube of Fate (2)#Vận Mệnh Ma Phương (2)#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#dragon counqest#Thiện Long Cốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Uncharted Paradise#Huyễn Hải Kì Đàm#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Thurs Fights Cross#Thurs Fights Cross#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Western Steppes#Đại Lục Hoàn Mĩ - Tây Lục#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Grape Valley, Grape Valley#Grape Valley#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nemesis Gaunntlet, Museum#Linh Lung Cục#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Dawnlight Halls, Palace of the Dawn (DR 1)#Thự Quang Điện (DR 1)#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Mirage Lake, Mirage Lake#Huyễn Cảnh Thận Hồ#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Rosesand Ruins, Desert Ruins#Côi Mạc Tàn Viên#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Nightmare Woods, Forest Ruins#Yểm Lâm Phế Khư#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Advisors Sanctum, Palace of the Dawn (DR 2)#Thự Quang Điện (DR 2)#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Wonderland, Adventure Kingdom (Park)#Kì Lạc Mạo Hiểm Vương Quốc#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#The Indestructible City#Mô thức câu chuyện Tây Lục#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Phoenix Sanctum, Hall of Fame#Phoenix Sanctum, Hall of Fame#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Town of Arrivals, Battlefield - Dusk Outpost#Ước chiến Liên server - Long Chiến Chi Dã#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Icebound Underworld, Ice Hell (LA)#Băng Vọng Địa Ngục#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Doosan Station, Arena of the Gods#Doosan Station, Arena of the Gods#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Alt TT Revisited, Twilight Palace#Alt TT Revisited, Twilight Palace#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Spring Pass, Peach Abode (Mentoring)#Spring Pass, Peach Abode (Mentoring)#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Abode of Dreams#Abode of Dreams#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#White Wolf Pass#White Wolf Pass#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Imperial Battle#Imperial Battle#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Northern Lands#Northern Lands#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Altar of the Virgin#Altar of the Virgin#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Imperial Battle#Imperial Battle#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Northern Lands#Northern Lands#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Full Moon Pavilion#Full Moon Pavilion#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Abode of Changes#Abode of Changes#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#quicksand maze#quicksand maze#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#quicksand maze#quicksand maze#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-3 PvP#Đấu trường T-3 PvP#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-3 PvE#Đấu trường T-3 PvE#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-2 PvP#Đấu trường T-2 PvP#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-2 PvE#Đấu trường T-2 PvE#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-1 PvP#Đấu trường T-1 PvP#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Territory War T-1 PvE#Đấu trường T-1 PvE#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Etherblade Arena#Đấu trường Kiếm Tiên Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Lost Arena#Đấu trường Vạn Hóa Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Plume Arena#Đấu trường Tích Vũ Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Archosaur Arenas#Đấu trường Tổ Long Thành#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Quicksand Maze (Sandstorm Mirage)#Huyễn Sa Thận Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Quicksand Maze (Mirage of the wandering sands)#Mê Sa Huyễn Cảnh#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
-    sed -i "s#Tomb of Whispers#Tomb of Whispers#g" "$DIR_WORKSPACES_HOME/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#City of Abominations#Minh Thú Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Secret Passage#Anh Hùng Trủng#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Firecrag Grotto#Hỏa Nham Động Huyệt#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Den of Rabid Wolves#Cuồng Lang Sào Huyệt#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Cave of the Vicious#Xà Hạt Động#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Hall of Deception#Thanh Y Trủng#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Gate of Delirium#U Minh Cư#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Secret Frostcover Grounds#Lí Sương Bí Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Valley of Disaster#Thiên Kiếp Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Forest Ruins#Tùng Lâm Di Tích#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Cave of Sadistic Glee#Quỷ Vực Huyễn Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Wraithgate#Oán Linh Chi Môn#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Hallucinatory Trench#Bí Bảo Quật#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Eden#Tiên Huyễn Thiên#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Brimstone Pit#Ma Huyễn Thiên#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Temple of the Dragon#Long Cung#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nightscream Island#Dạ Khốc Đảo#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Snake Isle#Vạn Xà Đảo#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Lothranis#Tiên giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Momaganon#Ma giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Seat of Torment#Thiên Giới Luyện Ngục#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Abaddon#Ma Vực Đào Nguyên#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Warsong City#Chiến Ca Chi Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Palace of Nirvana#Luân Hồi Điện#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Lunar Glade#Thần Nguyệt Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Valley of Reciprocity#Thần Vô Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Frostcover City#Phúc Sương Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Twilight Temple#Hoàng Hôn Thánh Điện#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Cube of Fate#Vận Mệnh Ma Phương#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Chrono City#Thiên Lệ Chi Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Perfect Chapel#Khung cảnh Hôn Lễ#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Guild Base#Phụ bản Bang Phái#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Morai#Bồng Lai Huyễn Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Phoenix Valley#Phượng Minh Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Endless Universe#Vô Định Trụ#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Blighted Chamer#Thần Độc Chi Gian#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Endless Universe#Vô ĐỊnh Trụ-mô thức cấp cao#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Wargod Gulch#Chiến Thần Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Five Emperors#Ngũ Đế Chi Đô#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nation War 2#Quốc Chiến-Cô Đảo Đoạt Kì#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nation Wa TOWER#Quốc Chiến-Thủy Tinh Tranh Đoạt#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nation War CRYSTAL#Quốc Chiến-Đoạn Kiều Đối Trì#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Sunset Valley#Lạc Nhật Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Shutter Palace#Bất Xá Đường#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Dragon Hidden Den#Long Ẩn Quật#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Realm of Reflection#Linh Đàn Huyễn Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#startpoint#Linh Độ Đinh Châu#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Origination#Khung Thế Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Primal World#Nhân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Flowsilver Palace#Lưu Ngân Cung#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Undercurrent Hall#Phục Ba Đường#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Mortal Realm#Mô thức Câu chuyện Nhân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#LightSail Cave#Bồng Minh Động#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Cube of Fate (2)#Vận Mệnh Ma Phương (2)#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#dragon counqest#Thiện Long Cốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#heavenfall temple#Tru Thiên Phù Đồ Tháp#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Uncharted Paradise#Huyễn Hải Kì Đàm#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Thurs Fights Cross#Thurs Fights Cross#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Western Steppes#Đại Lục Hoàn Mĩ - Tây Lục#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Homestead, Beyond the Clouds#Lăng Vân Giới#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Grape Valley, Grape Valley#Grape Valley#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nemesis Gaunntlet, Museum#Linh Lung Cục#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Dawnlight Halls, Palace of the Dawn (DR 1)#Thự Quang Điện (DR 1)#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Mirage Lake, Mirage Lake#Huyễn Cảnh Thận Hồ#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Rosesand Ruins, Desert Ruins#Côi Mạc Tàn Viên#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Nightmare Woods, Forest Ruins#Yểm Lâm Phế Khư#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Advisors Sanctum, Palace of the Dawn (DR 2)#Thự Quang Điện (DR 2)#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Wonderland, Adventure Kingdom (Park)#Kì Lạc Mạo Hiểm Vương Quốc#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#The Indestructible City#Mô thức câu chuyện Tây Lục#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Phoenix Sanctum, Hall of Fame#Phoenix Sanctum, Hall of Fame#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Town of Arrivals, Battlefield - Dusk Outpost#Ước chiến Liên server - Long Chiến Chi Dã#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Icebound Underworld, Ice Hell (LA)#Băng Vọng Địa Ngục#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Doosan Station, Arena of the Gods#Doosan Station, Arena of the Gods#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Alt TT Revisited, Twilight Palace#Alt TT Revisited, Twilight Palace#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Spring Pass, Peach Abode (Mentoring)#Spring Pass, Peach Abode (Mentoring)#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Abode of Dreams#Abode of Dreams#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#White Wolf Pass#White Wolf Pass#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Imperial Battle#Imperial Battle#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Northern Lands#Northern Lands#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Altar of the Virgin#Altar of the Virgin#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Imperial Battle#Imperial Battle#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Northern Lands#Northern Lands#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Full Moon Pavilion#Full Moon Pavilion#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Abode of Changes#Abode of Changes#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#quicksand maze#quicksand maze#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#quicksand maze#quicksand maze#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-3 PvP#Đấu trường T-3 PvP#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-3 PvE#Đấu trường T-3 PvE#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-2 PvP#Đấu trường T-2 PvP#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-2 PvE#Đấu trường T-2 PvE#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-1 PvP#Đấu trường T-1 PvP#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Territory War T-1 PvE#Đấu trường T-1 PvE#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Etherblade Arena#Đấu trường Kiếm Tiên Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Lost Arena#Đấu trường Vạn Hóa Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Plume Arena#Đấu trường Tích Vũ Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Archosaur Arenas#Đấu trường Tổ Long Thành#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Quicksand Maze (Sandstorm Mirage)#Huyễn Sa Thận Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Quicksand Maze (Mirage of the wandering sands)#Mê Sa Huyễn Cảnh#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
+    sed -i "s#Tomb of Whispers#Tomb of Whispers#g" "${DIR_WORKSPACES_HOME}/pwadmin/webapps/pwadmin/serverctrl.jsp"
 
     # Có nhiều map mình không tìm được tên tiếng Việt, thậm chí dịch bừa. Ai biết, xin chỉ giùm nhé.
 }
@@ -476,11 +477,11 @@ function setupWebTools() {
 function composeStartAndStopScript(){
 
     # Download start/stop script
-    wget -O /start https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/master/start
-    wget -O /stop https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/master/stop
+    wget -O /start https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/main/start
+    wget -O /stop https://raw.githubusercontent.com/hoangnguyent/pwtools/refs/heads/main/stop
 
     # Override the 'start' file
-    sed -i "s|^PW_PATH=.*|PW_PATH=$DIR_WORKSPACES_HOME|" "start"
+    sed -i "s|^PW_PATH=.*|PW_PATH=${DIR_WORKSPACES_HOME}|" "start"
     hostCommand="
 if ! grep -q \"127.0.0.1 AUDATA\" /etc/hosts; then
     echo \"Docker Container revertes the /etc/hosts whenever it restarts. We are re-adding the hostnames resolution automatically...\"
@@ -496,7 +497,7 @@ fi
 
     echo -e "stop\nstart" > restart
 
-    chmod -R 777 $DIR_WORKSPACES_HOME
+    chmod -R 777 "${DIR_WORKSPACES_HOME}"
     chmod 777 start stop restart
 
 }
@@ -504,7 +505,7 @@ fi
 function setupGameServer(){
 
     # Update file /etc/hosts, firewall
-    #./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="master" --source-path="/copy" /copy
+    #./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/copy" /copy
     #Copy the whole folder exept /copy/etc/hosts
     #rsync -av --exclude='/hosts' /copy/etc/ /etc/
     #TODO: chỉ copy các file thiếu from outside to /lib thôi. Hình như chả cần cả 64 đâu. Hình như không cần libtask.so nào cả.
@@ -515,12 +516,12 @@ function setupGameServer(){
 
     # Override file /etc/table.xml: replace the line that starts with a text with a whole new line.
     sed -i "/^<connection name=\"auth0\" poolsize=\"3\" url=\"jdbc:mysql/c\<connection name=\"auth0\" poolsize=\"3\" url=\"jdbc:mysql://$dbHost:3306/$dbName?useUnicode=true&amp;characterEncoding=utf8&amp;jdbcCompliantTruncation=false\" username=\"$dbUser\" password=\"$dbPassword\"/>" "/etc/table.xml"
-    cp -f /etc/table.xml $DIR_WORKSPACES_HOME/authd/table.xml
+    cp -f /etc/table.xml "${DIR_WORKSPACES_HOME}"/authd/table.xml
     
     sed -i "/^address/c\address                 =       127.0.0.1" "/etc/table.xml"
 
     # Override file /home/authd/authd
-    cat << 'EOF' > $DIR_WORKSPACES_HOME/authd/authd
+    cat << 'EOF' > "${DIR_WORKSPACES_HOME}"/authd/authd
 #!/bin/sh
 while true; do
     /home/jdk1.6.0_45/bin/java -cp lib/application.jar:.:lib/commons-collections-3.1.jar:lib/commons-dbcp-1.2.1.jar:lib/commons-logging-1.0.4.jar:lib/commons-pool-1.2.jar:lib/jio.jar:lib/log4j-1.2.9.jar:lib/mysql-connector-java-5.1.10-bin.jar:.:.:/home/jdk1.6.0_45/lib/dt.jar:/home/jdk1.6.0_45/lib/tools.jar authd table.xml
@@ -530,7 +531,7 @@ EOF
 
 
     # Override file /home/gamed/gs.conf: replace the line that starts with a text with a whole new line.
-    sed -i "/^Root	/c\Root				= $DIR_WORKSPACES_HOME/gamed/config" "$DIR_WORKSPACES_HOME/gamed/gs.conf" #TODO: /home/gamed/gs.conf hình như cần sửa path
+    sed -i "/^Root	/c\Root				= ${DIR_WORKSPACES_HOME}/gamed/config" "${DIR_WORKSPACES_HOME}/gamed/gs.conf" #TODO: /home/gamed/gs.conf hình như cần sửa path
     #TODO: nếu sửa toàn toàn bộ gdeliveryd/gamesys.conf thành 0.0.0.0, sẽ không báo lỗi [err : CrossRelated Connect to central delivery failed] nữa
     echo "### direct log messages to CONSOLE ###
 log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
@@ -548,10 +549,10 @@ log4j.appender.SYSLOG.Threshold=TRACE
 
 # Set root logger to TRACE level
 log4j.rootLogger=trace, CONSOLE, SYSLOG
-" > $DIR_WORKSPACES_HOME/authd/log4j.properties
+" > "${DIR_WORKSPACES_HOME}"/authd/log4j.properties
 
     # Override /home/logservice/logservice.conf
-    sed -i "/^threshhold/c\threshhold		=	LOG_TRACE" "$DIR_WORKSPACES_HOME/logservice/logservice.conf"
+    sed -i "/^threshhold/c\threshhold		=	LOG_TRACE" "${DIR_WORKSPACES_HOME}/logservice/logservice.conf"
 
     # Sync files to folder /home/gamed/config. These 9 files should be copied manually.
     # 1. aipolicy.data
@@ -582,7 +583,7 @@ function enableGameServerConnection(){
     }' your_file.txt
 
     # Override file /home/gdeliveryd/gamesys.conf: replace the line that starts with a text with a whole new line. Allow only this local machine to connect.
-    sed -i "/^address/c\address				=	127.0.0.1" "$DIR_WORKSPACES_HOME/gdeliveryd/gamesys.conf"
+    sed -i "/^address/c\address				=	127.0.0.1" "${DIR_WORKSPACES_HOME}/gdeliveryd/gamesys.conf"
 
 }
 

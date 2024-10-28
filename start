@@ -4,7 +4,7 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 PW_PATH=/root
-LogsPath=$PW_PATH/logs
+LogsPath="${PW_PATH}"/logs
 
 function clearLog(){
     if [ ! -d $LogsPath ]; then
@@ -18,7 +18,7 @@ function startAuthd() {
 
     echo "##############################  - Enable account data service (AUTHD) ####################"
     # Account Data Service
-    cd $PW_PATH/authd/
+    cd "${PW_PATH}"/authd/
     nohup ./authd 2>&1 | tee $LogsPath/authd.log &
     sleep 2
     AU=`ps -ef | grep authd | grep -v grep | awk '{print $2}'`
@@ -34,7 +34,7 @@ function startGamedbd(){
 
     echo "##############################  - Start the role data service(GAMEDBD) ##################"
     # Role Data Service #
-    cd $PW_PATH/gamedbd/
+    cd "${PW_PATH}"/gamedbd/
     nohup ./gamedbd gamesys.conf 2>&1 | tee $LogsPath/gamedbd.log &
     sleep 2
     DB=`ps -ef | grep gamedbd | grep -v grep | awk '{print $2}'`
@@ -50,7 +50,7 @@ function startGacd(){
 
     echo "##############################  - Start anti-addiction service(GACD) ####################"
     # Anti-addiction service #
-    cd $PW_PATH/gacd/
+    cd "${PW_PATH}"/gacd/
     nohup ./gacd gamesys.conf 2>&1 | tee $LogsPath/gacd.log &
     sleep 2
     GACD=`ps -ef | grep gacd | grep -v grep | awk '{print $2}'`
@@ -66,7 +66,7 @@ function startUniquenamed(){
 
     echo "##############################  - Start the Unique Name service(UNIQUENAMED) ############"
     # Unique Name service #
-    cd $PW_PATH/uniquenamed
+    cd "${PW_PATH}"/uniquenamed
     nohup ./uniquenamed gamesys.conf 2>&1 | tee $LogsPath/uniquename.log &
     sleep 2
     UN=`ps -ef | grep uniquenamed | grep -v grep | awk '{print $2}'`
@@ -82,7 +82,7 @@ function startGfactiond(){
 
     echo "##############################  - Start the Gang service(GFACTIOND) #####################"
     # Gang Service #
-    cd $PW_PATH/gfactiond/
+    cd "${PW_PATH}"/gfactiond/
     nohup ./gfactiond gamesys.conf 2>&1 | tee $LogsPath/gfactiond.log &
     sleep 2
     GF=`ps -ef | grep gfactiond | grep -v grep | awk '{print $2}'`
@@ -98,7 +98,7 @@ function startLogservice(){
 
     echo "##############################  - Start the Log service #################################"
     # Log Service #
-    cd $PW_PATH/logservice
+    cd "${PW_PATH}"/logservice
     nohup ./logservice logservice.conf 2>&1 | tee $LogsPath/logservice.log &
     sleep 2
     LOGS=`ps -ef | grep logservice | grep -v grep | awk '{print $2}'`
@@ -114,7 +114,7 @@ function startGlinkd(){
 
     echo "##############################  - Start the Login relation service(GLINKD) ##############"
     # Login relation Service #
-    cd $PW_PATH/glinkd/
+    cd "${PW_PATH}"/glinkd/
     nohup ./glinkd gamesys.conf 1 2>&1 | tee $LogsPath/glinkd1.log &
     nohup ./glinkd gamesys.conf 2 2>&1 | tee $LogsPath/glinkd2.log &
     nohup ./glinkd gamesys.conf 3 2>&1 | tee $LogsPath/glinkd3.log &
@@ -134,7 +134,7 @@ function loadMaps(){
     maps="gs01,is61,is69"
 
     echo "##############################  - Load Maps(GS) #########################################"
-    cd $PW_PATH/gamed/
+    cd "${PW_PATH}"/gamed/
     nohup ./gs gs01 >/home/logs/gs01.log 2>&1 &
     sleep 2
     nohup ./gs is61 >/home/logs/is61.log 2>&1 &
@@ -143,7 +143,7 @@ function loadMaps(){
     sleep 2
     #IFS=',' read -r -a mapList <<< "$maps"
     #for map in "${mapList[@]}"; do
-    #    nohup ./gs "$map" > "$PW_PATH/logs/$map.log" 2>&1 &
+    #    nohup ./gs "$map" > "${PW_PATH}/logs/$map.log" 2>&1 &
     #    sleep 2
     #    GS=`ps -ef | grep gs | grep -v grep | awk '{print $2}'`
     #    if [ "$GS" != "" ]; then
@@ -159,7 +159,7 @@ function startGdeliveryd(){
 
     echo "##############################  - Start basic service(GDELIVERYD) #######################"
     # Basic Services #
-    cd $PW_PATH/gdeliveryd/
+    cd "${PW_PATH}"/gdeliveryd/
     nohup ./gdeliveryd gamesys.conf 2>&1 | tee $LogsPath/gdeliveryd.log &
     sleep 2
     GD=`ps -ef | grep gdeliveryd | grep -v grep | awk '{print $2}'`
@@ -174,7 +174,7 @@ function startGdeliveryd(){
 function startWebTools(){
 
     echo "=== WEB TOOLS ======="
-    $PW_PATH/server pwAdmin start
+    "${PW_PATH}"/server pwAdmin start
 
 }
 
