@@ -1,0 +1,1 @@
+docker run -u root -it -v D:/game/dockerdata/pw173/workspaces:/workspaces --name pw173 -p 8080:8080 -p 8081:80 -p 3306:3306 -p 29000:29000 --memory="6g" ubuntu:jammy /bin/bash

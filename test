@@ -1,0 +1,199 @@
+#!/bin/bash
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+PWPath=/home
+LogsPath=$PWPath/logs
+
+service mariadb start
+
+function clearLog(){
+    if [ ! -d $LogsPath ]; then
+        mkdir $LogsPath
+    else
+        rm $LogsPath/*.log
+    fi
+}
+
+function startAuthd() {
+
+    echo "##############################  - Enable account data service (AUTHD) ####################"
+    # Account Data Service
+    cd $PWPath/authd/
+    nohup ./authd 2>&1 | tee $LogsPath/authd.log &
+    sleep 2
+    AU=`ps -ef | grep authd | grep -v grep | awk '{print $2}'`
+    if [ "$AU" != "" ]; then
+        echo "Account data service started successfully!"
+    else
+        echo "Account data service startup failed!"
+    fi
+    echo ""
+}
+
+function startGamedbd(){
+
+    echo "##############################  - Start the role data service(GAMEDBD) ##################"
+    # Role Data Service #
+    cd $PWPath/gamedbd/
+    nohup ./gamedbd gamesys.conf 2>&1 | tee $LogsPath/gamedbd.log &
+    sleep 2
+    DB=`ps -ef | grep gamedbd | grep -v grep | awk '{print $2}'`
+    if [ "$DB" != "" ]; then
+       echo "The role data service started successfully!"
+    else
+       echo "Role data service started failed!"
+    fi
+    echo ""
+}
+
+function startGacd(){
+
+    echo "##############################  - Start anti-addiction service(GACD) ####################"
+    # Anti-addiction service #
+    cd $PWPath/gacd/
+    nohup ./gacd gamesys.conf 2>&1 | tee $LogsPath/gacd.log &
+    sleep 2
+    GACD=`ps -ef | grep gacd | grep -v grep | awk '{print $2}'`
+    if [ "$GACD" != "" ]; then
+        echo "The anti-addiction service started successfully!"
+    else
+        echo "Anti-addiction service started failed!"
+    fi
+    echo ""
+}
+
+function startUniquenamed(){
+
+    echo "##############################  - Start the Unique Name service(UNIQUENAMED) ############"
+    # Unique Name service #
+    cd $PWPath/uniquenamed
+    nohup ./uniquenamed gamesys.conf 2>&1 | tee $LogsPath/uniquename.log &
+    sleep 2
+    UN=`ps -ef | grep uniquenamed | grep -v grep | awk '{print $2}'`
+    if [ "$UN" != "" ]; then
+       echo "Unique Name service started successfully!"
+    else
+       echo "Unique Name service started failed!"
+    fi
+    echo ""
+}
+
+function startGfactiond(){
+
+    echo "##############################  - Start the Gang service(GFACTIOND) #####################"
+    # Gang Service #
+    cd $PWPath/gfactiond/
+    nohup ./gfactiond gamesys.conf 2>&1 | tee $LogsPath/gfactiond.log &
+    sleep 2
+    GF=`ps -ef | grep gfactiond | grep -v grep | awk '{print $2}'`
+    if [ "$GF" != "" ]; then
+       echo "Gang service started successfully!"
+    else
+       echo "Gang service started failed!"
+    fi
+    echo ""
+}
+
+function startLogservice(){
+
+    echo "##############################  - Start the Log service #################################"
+    # Log Service #
+    cd $PWPath/logservice
+    nohup ./logservice logservice.conf 2>&1 | tee $LogsPath/logservice.log &
+    sleep 2
+    LOGS=`ps -ef | grep logservice | grep -v grep | awk '{print $2}'`
+    if [ "$LOGS" != "" ]; then
+       echo "The Log service started successfully!"
+    else
+       echo "The Log service started failed!"
+    fi
+    echo ""
+}
+
+function startGlinkd(){
+
+    echo "##############################  - Start the Login relation service(GLINKD) ##############"
+    # Login relation Service #
+    cd $PWPath/glinkd/
+    nohup ./glinkd gamesys.conf 1 2>&1 | tee $LogsPath/glinkd1.log &
+    #nohup ./glinkd gamesys.conf 2 2>&1 | tee $LogsPath/glinkd2.log &
+    #nohup ./glinkd gamesys.conf 3 2>&1 | tee $LogsPath/glinkd3.log &
+    #nohup ./glinkd gamesys.conf 4 2>&1 | tee $LogsPath/glinkd4.log &
+    sleep 1
+    LINK=`ps -ef | grep glinkd | grep -v grep | awk '{print $2}'`
+    if [ "$LINK" != "" ]; then
+       echo "Login relation service started successfully!"
+    else
+       echo "Login relation service started failed!"
+    fi
+    echo ""
+}
+
+function loadMaps(){
+
+    echo "##############################  - Load Maps(GS) #########################################"
+    # Map services #
+    cd $PWPath/gamed/
+    nohup ./gs gs01  >$LogsPath/gs01.log 2>&1 &
+    sleep 2
+    nohup ./gs is61  >$LogsPath/is61.log 2>&1 &
+    sleep 1
+    nohup ./gs is69  >$LogsPath/is69.log 2>&1 &
+
+    GS=`ps -ef | grep gs | grep -v grep | awk '{print $2}'`
+    if [ "$GS" != "" ]; then
+       echo "The maps loaded successfully!"
+    else
+       echo "The maps loaded failed!"
+    fi
+    echo ""
+}
+
+function startGdeliveryd(){
+
+    echo "##############################  - Start basic service(GDELIVERYD) #######################"
+    # Basic Services #
+    cd $PWPath/gdeliveryd/
+    nohup ./gdeliveryd gamesys.conf 2>&1 | tee $LogsPath/gdeliveryd.log &
+    sleep 2
+    GD=`ps -ef | grep gdeliveryd | grep -v grep | awk '{print $2}'`
+    if [ "$GD" != "" ]; then
+       echo "Basic service started successfully!"
+    else
+       echo "Basic service started failed!"
+    fi
+    echo ""
+}
+
+function startWebTools(){
+
+    echo "=== WEB TOOLS ======="
+    service apache2 start
+    $PWPath/server pwAdmin start
+
+}
+
+function main(){
+
+    echo "##############################   Server starting!  ######################################"
+    trap 'echo "Script end!"' EXIT
+
+    clearLog
+    startAuthd
+    startGamedbd
+    startGacd
+    startUniquenamed
+    startGfactiond
+    startLogservice
+    loadMaps
+
+    startGdeliveryd
+    startGlinkd
+
+    #startWebTools
+
+}
+
+main
