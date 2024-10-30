@@ -11,6 +11,6 @@ pkill -9 gacd
 pkill -9 logservices
 pkill -9 start.sh
 service mariadb stop
-pkill -9 java
-sleep 10
+JAVA_HOME=/home/jdk1.6.0_45 /home/tomcat/bin/catalina.sh stop
+sleep 5
 echo "=== DONE! ==========="

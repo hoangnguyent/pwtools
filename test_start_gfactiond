@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Gang service(GFACTIOND) #####################"
+cd "${PW_PATH}"/gfactiond/
+nohup ./gfactiond gamesys.conf > "${PW_PATH}"/logs/gfactiond.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./gfactiond: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

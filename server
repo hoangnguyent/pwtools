@@ -15,7 +15,7 @@ DATE=`date +%Y-%m-%d-%H-%M-%S`
 # Server
 ServerDir=/root/home
 MAPS=$ServerDir/maps
-LogsDir=$ServerDir/logservice/logs
+LogsDir=$ServerDir/logs
 cpwDir=/var/www/html/CPW
 url=http://127.0.0.1:8080/pwadmin/AA
 fil=cmd.jsp
@@ -23,10 +23,6 @@ gl=1 # (max 7) number of glinkd instances to start
 
 # Admin Control Panel root directories (blank "" will not try to load during server start/stop)
 DIR_TOMCAT_BIN=/root/home/pwadmin/bin
-
-# STORAGE directory must exist to use backup
-STORAGE=/media/storage
-BKUPDIR=${STORAGE}/backup
 
 ##### MySQL CONFIG USED FOR BACKUP ONLY #####
 USR=admin
@@ -87,7 +83,7 @@ case ${1} in
 		x="false"
 		arg2=""
 	fi
-	/$ServerDir/chmod.sh
+
 	echo ""
 	echo $G"SERVER STARTING "$W"PLEASE WAIT...."
 	echo -ne $B'>                    '$W'(0%)\r'	
@@ -229,7 +225,7 @@ case ${1} in
 		{ cd /$ServerDir/gamed; ./gs $2 > $LogsDir/$2.log & } &>/dev/null
 		sleep 3
 		freemem=`free -m | grep "Mem:" | awk '{print $4}'`
-		echo "${G}MAP ${2} LOADED$ {Y}(Memory Available: ${freemem} MB)${W}"
+		echo "${G}MAP ${2} LOADED ${Y}(Memory Available: ${freemem} MB)${W}"
 		#echo $G'MAP LOADED                  '$W
 		echo ""
 	else
@@ -400,7 +396,7 @@ case ${1} in
 		exit 0
 	else
 		echo ""
-		echo "${LogsDir} directory not found..."
+		mkdir -p "${LogsDir}"
 		echo ""
 		exit 1
 	fi
