@@ -7,7 +7,7 @@ PW_PATH=/root
 
 function loadMaps(){
 
-    maps="gs01,is61,is69"
+    local maps=$1
 
     IFS=',' read -r -a mapList <<< "$maps"
     for map in "${mapList[@]}"; do
@@ -27,7 +27,7 @@ function main(){
 
     "${PW_PATH}"/server start no-maps
 
-    loadMaps
+    loadMaps "gs01,is61,is69"
 
     sleep 40
     echo "=== WEB TOOLS ======="
@@ -35,3 +35,5 @@ function main(){
 
 }
 
+# run the script
+main

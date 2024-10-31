@@ -19,7 +19,7 @@ LogsDir=$ServerDir/logs
 cpwDir=/var/www/html/CPW
 url=http://127.0.0.1:8080/pwadmin/AA
 fil=cmd.jsp
-gl=1 # (max 7) number of glinkd instances to start
+gl=5 # (max 7) number of glinkd instances to start
 
 # Admin Control Panel root directories (blank "" will not try to load during server start/stop)
 DIR_TOMCAT_BIN=/root/home/pwadmin/bin
@@ -61,7 +61,7 @@ function load_maps {
 		fi
 	done
 			
-	{ cd /$ServerDir/gamed; LD_PRELOAD=./libtask.so nohup ./gs gs01 gs.conf gmserver.conf gsalias.conf ${str_map_ids} & } &>/dev/null
+	{ cd /$ServerDir/gamed; nohup ./gs ${str_map_ids} > $LogsDir/${str_map_ids}.log & } &>/dev/null
 	
 	sleep 5
 
@@ -87,16 +87,16 @@ case ${1} in
 	echo ""
 	echo $G"SERVER STARTING "$W"PLEASE WAIT...."
 	echo -ne $B'>                    '$W'(0%)\r'	
-	{ cd /$ServerDir/logservice; ./logservice logservice.conf & } &> /dev/null
-	sleep 1
+	{ cd /$ServerDir/logservice; ./logservice logservice.conf > $LogsDir/logservice.log & } &> /dev/null
+	sleep 2
 	
 	echo -ne $B'-->                  '$W'(10%)\r'
-	{ cd /$ServerDir/uniquenamed; ./uniquenamed gamesys.conf & } &> /dev/null
+	{ cd /$ServerDir/uniquenamed; ./uniquenamed gamesys.conf > $LogsDir/uniquenamed.log & } &> /dev/null
 	sleep 2
 	
 	echo -ne $B'---->                '$W'(20%)\r'
 	{	
-		if [[ -d /$ServerDir/auth ]]; then
+		if [[ -d /$ServerDir/auth/build ]]; then
 			cd /$ServerDir/auth/build/; ./authd.sh start > $LogsDir/authd.log &
 		elif [[ -d /$ServerDir/authd ]]; then
 			cd /$ServerDir/authd/; ./authd > $LogsDir/authd.log &
@@ -105,25 +105,25 @@ case ${1} in
 	sleep 3
 	
 	echo -ne $B'-------->            '$W'(40%)\r'	 
-	{ cd /$ServerDir/gamedbd; ./gamedbd gamesys.conf & } &> /dev/null
+	{ cd /$ServerDir/gamedbd; ./gamedbd gamesys.conf > $LogsDir/gamedbd.log & } &> /dev/null
 	sleep 2
 	
 	echo -ne $B'---------->          '$W'(50%)\r'
-	{ cd /$ServerDir/gacd; ./gacd gamesys.conf & } &> /dev/null
+	{ cd /$ServerDir/gacd; ./gacd gamesys.conf > $LogsDir/gacd.log & } &> /dev/null
 	sleep 2
 	
 	echo -ne $B'------------>        '$W'(60%)\r'
-	{ cd /$ServerDir/gfactiond; ./gfactiond gamesys.conf & } &> /dev/null
+	{ cd /$ServerDir/gfactiond; ./gfactiond gamesys.conf > $LogsDir/gfactiond.log & } &> /dev/null
 	sleep 2
 	
 	echo -ne $B'-------------->      '$W'(70%)\r'
-	{ cd /$ServerDir/gdeliveryd; ./gdeliveryd gamesys.conf & } &> /dev/null
-	sleep 3
+	{ cd /$ServerDir/gdeliveryd; ./gdeliveryd gamesys.conf > $LogsDir/gdeliveryd.log & } &> /dev/null
+	sleep 2
 	
 	echo -ne $B'---------------->    '$W'(80%)\r'
 	{
 		for (( v = 1; v <= $gl; v++ )); do
-			cd /$ServerDir/glinkd; ./glinkd gamesys.conf $v &
+			cd /$ServerDir/glinkd; ./glinkd gamesys.conf $v > $LogsDir/glink$v.log &
 			sleep 2
 		done
 	}&> /dev/null
@@ -131,7 +131,7 @@ case ${1} in
 	echo -ne $B'------------------>  '$W'(90%)\r'
 	{
 		if [[ -f /$ServerDir/anti_crash ]]; then
-			cd /$ServerDir; ./anti_crash &
+			cd /$ServerDir; ./anti_crash > $LogsDir/anti_crash.log &
 			sleep 1
 		fi
 	}&> /dev/null

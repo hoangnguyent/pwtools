@@ -74,7 +74,6 @@ function installSeverPackages(){
 
     dpkg --add-architecture i386
     apt update
-    apt-get update
     apt install -y sudo
     apt install -y dialog apt-utils > "$logfile" 2>&1
     apt install -y mc nano wget curl sed bash grep locales dpkg net-tools iputils-ping > "$logfile" 2>&1
@@ -106,7 +105,7 @@ function installDevPackages(){
 
     # Update lib
     ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/copy" /copy
-    cp -rf /copy/lib/* /lib
+    cp /copy/lib/*.* /lib
     ldconfig
 
 }
@@ -474,21 +473,12 @@ function composeStartAndStopScript(){
     # Override the 'start' file
     sed -i "s|^PW_PATH=.*|PW_PATH=${DIR_WORKSPACES_HOME}|" "start"
     sed -i "s|^PW_PATH=.*|PW_PATH=${DIR_WORKSPACES_HOME}|" "start_trace"
-#    hostCommand="
-#if ! grep -q \"127.0.0.1 AUDATA\" /etc/hosts; then
-#    echo \"Docker Container revertes the /etc/hosts whenever it restarts. We are re-adding the hostnames resolution automatically...\"
-#    echo \"$hostnamesResolution\" >> /etc/hosts
-#fi
-#"
-#
-#    echo -e "$hostCommand" >> start
-    echo -e "main" >> start
 
-    connectionStringCommand="echo $G\"To connect to the DB from outside the Container, use: jdbc:mariadb://$dbHost:3306/$dbName?user=$dbUser&password=$dbPassword\""
+    connectionStringCommand="echo \"To connect to the DB from outside the Container, use: ${G}jdbc:mariadb://$dbHost:3306/$dbName?user=$dbUser&password=$dbPassword\""
     echo -e "$connectionStringCommand" >> start
 
     echo ""
-    echo -e $P"If you are able to login and create character but unable enter the game, please re-check the C++ libraries installation step."
+    echo -e $P"If you are able to login and create character but unable enter the game, please re-check the C/C++ libraries installation step."
     echo ""
 
     echo -e "stop\nstart" > restart

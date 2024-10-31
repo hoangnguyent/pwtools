@@ -71,12 +71,13 @@ echo ""
 
 echo "=== LOAD MAPS ======="
 cd $PW_PATH/gamed
-${PW_PATH}/server start-map gs01
-${PW_PATH}/server start-map is61
-${PW_PATH}/server start-map is69
+${PW_PATH}/server start-map gs01 > $PW_PATH/logs/gs01.log &
+${PW_PATH}/server start-map is61 > $PW_PATH/logs/is61.log &
+${PW_PATH}/server start-map is69 > $PW_PATH/logs/is69.log &
+
+echo "=== WEB TOOLS ======="
+nohup sh -c "JAVA_HOME=${PW_PATH}/jdk1.6.0_45 /home/tomcat/bin/catalina.sh run" &
+sleep 30
 
 echo "=== DONE! ==========="
 echo ""
-
-echo "=== WEB TOOLS ======="
-$PW_PATH/server pwAdmin start
