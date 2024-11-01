@@ -7,11 +7,12 @@
 
 	// pwadmin access password as md5 encrypted string
 	// generate a md5 encrypted password e.g. https://www.md5online.org/md5-encrypt.html
+String algorithm = "md5AndThenBase64encode";
 String iweb_password = "179edfe73d9c016b51e9dc77ae0eebb1";
 
 	// connection settings to the mysql pw database
 String db_host = "localhost";
-	String db_port = "3306";
+String db_port = "3306";
 String db_user = "admin";
 String db_password = "admin";
 String db_database = "pw";

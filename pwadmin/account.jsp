@@ -12,13 +12,37 @@
 <%@include file="WEB-INF/.pwadminconf.jsp"%>
 
 <%!
-    String pw_encode(String salt)
+    String pw_encode(String salt, String algorithm) throws Exception
 	{
-        // Generate MD5 hash
-        byte[] hash = DigestUtils.md5(salt);
+        salt = salt.toLowerCase();
 
-        // Base64 encode the hash
-        return Base64.encodeBase64String(hash);
+        if("HexEncoding".equalsIgnoreCase(algorithm)){
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.reset();
+            md.update(salt.getBytes());
+            byte[] digest = md.digest();
+            StringBuffer hashedpasswd = new StringBuffer("0x");
+            String hx;
+            for (int i = 0; i < digest.length; i++) {
+                hx = Integer.toHexString(0xFF & digest[i]);
+                // 0x03 is equal to 0x3, but we need 0x03 for our md5sum
+                if (hx.length() == 1) {
+                    hx = "0" + hx;
+                }
+                hashedpasswd.append(hx);
+            }
+
+            return hashedpasswd.toString();
+
+        } else {
+
+            // Generate MD5 hash
+            byte[] hash = DigestUtils.md5(salt);
+
+            // Base64 encode the hash
+            return Base64.encodeBase64String(hash);
+        }
    	}
 %>
 
@@ -101,7 +125,7 @@
 								}
 								else
 								{
-									password = pw_encode(login + password);
+									password = pw_encode(login + password, algorithm);
 									rs = statement.executeQuery("CALL adduser('" + login + "', '" + password + "', '0', '0', '0', '0', '" + mail + "', '0', '0', '0', '0', '0', '0', '0', NULL, '', '" + password + "')");
 									message = "<font color=\"00cc00\">Account Created</font>";
 								}
@@ -177,7 +201,7 @@
 								}
 								else
 								{
-									password_old = pw_encode(login + password_old);
+									password_old = pw_encode(login + password_old, algorithm);
 
 									rs = statement.executeQuery("CALL adduser('" + login + "_TEMP_USER', '" + password_old + "', '0', '0', '0', '0', '', '0', '0', '0', '0', '0', '0', '0', NULL, '', '" + password_old + "')");
 									rs = statement.executeQuery("SELECT passwd FROM users WHERE name='" + login + "_TEMP_USER'");
@@ -192,7 +216,7 @@
 									}
 									else
 									{
-										password_new = pw_encode(login + password_new);
+										password_new = pw_encode(login + password_new, algorithm);
 
 										statement.executeUpdate("LOCK TABLE users WRITE");
 										statement.executeUpdate("DELETE FROM users WHERE name='" + login + "'");

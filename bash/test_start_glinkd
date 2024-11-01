@@ -1,0 +1,15 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Login relation service(GLINKD) ##############"
+cd "${PW_PATH}"/glinkd/
+nohup ./glinkd gamesys.conf 1 > "${PW_PATH}"/logs/glinkd1.log &
+nohup ./glinkd gamesys.conf 2 > "${PW_PATH}"/logs/glinkd2.log &
+nohup ./glinkd gamesys.conf 3 > "${PW_PATH}"/logs/glinkd3.log &
+nohup ./glinkd gamesys.conf 4 > "${PW_PATH}"/logs/glinkd4.log &
+nohup ./glinkd gamesys.conf 5 > "${PW_PATH}"/logs/glinkd5.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./glinkd: No such file or directory, please re-check the C++ libraries installation step."
+echo ""
