@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-PW_PATH=/home
+PW_PATH=/root/home
 LOG_PATH="${PW_PATH}/logs"
 
 # Text colors
@@ -94,18 +94,26 @@ function startGdeliveryd(){
     echo ""
 }
 
+function startWebTools(){
+
+    echo "##############################  - WEB TOOLS #############################################"
+    nohup sh -c "JAVA_HOME=${PW_PATH}/jdk1.6.0_45 /home/tomcat/bin/catalina.sh run" &
+    # display pwadmin url here
+    echo "##############################  - DONE! #################################################"
+
+    # Starting other tools are placed here
+}
+
 function main() {
     echo "${G}Script started!${W}"
     trap 'echo "${G}Script ended!${W}"' EXIT
 
     service mariadb start
-    echo "##############################  - WEB TOOLS #############################################"
-    nohup sh -c "JAVA_HOME=${PW_PATH}/jdk1.6.0_45 /home/tomcat/bin/catalina.sh run" &
-    echo "##############################  - DONE! #################################################"
+    # display jdbc string here
 
     "${PW_PATH}/server" clearlogs
 
-    if [ $1 == "trace" ]; then
+    if [ $1 = "trace" ]; then
         #TODO: enable TRACE log
         startAuthd
         startGamedbd
@@ -123,7 +131,6 @@ function main() {
         startGdeliveryd
         startGlinkd
     else
-        #TODO: disable TRACE log
         local maps=$1
         if [ -z "${maps}" ]; then
             maps="gs01,is61,is69"
@@ -132,7 +139,9 @@ function main() {
         loadMaps "${maps}"
     fi
 
-    second=40
+    startWebTools
+
+    second=30
     echo -e "Wait $second seconds for stable..."
     sleep $second
 
