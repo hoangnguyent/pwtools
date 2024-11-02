@@ -222,7 +222,7 @@ case ${1} in
 	if [[ ! -z ${2} ]]; then
 		echo ""
 		echo -ne $G'STARTING MAP '$W $2'\r'
-		{ cd /$ServerDir/gamed; ./gs $2 > $LogsDir/$2.log & }
+		{ cd $ServerDir/gamed; ./gs $2 > $LogsDir/$2.log & }
 		sleep 3
 		freemem=`free -m | grep "Mem:" | awk '{print $4}'`
 		echo "${G}MAP ${2} LOADED ${Y}(Memory Available: ${freemem} MB)${W}"

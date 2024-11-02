@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Declare resources
-DIR_MOUNT="/your_dir" # This must be one of your mount folders.
-DIR_WORKING="workspace" # As you wish
+DIR_MOUNT=/your_dir # This must be one of your mount folders.
+DIR_WORKING=workspace # As you wish. "" is also fine.
 DOWNLOAD_URL="https://drive.usercontent.google.com/download?id=1UebfhrwJIWfP5cZvdra1tNWVZb8Is9PE&export=download&authuser=0&confirm=t&uuid=5c5a1d80-c934-4688-a7a9-6630f844de42"
 DOWNLOAD_FILE_NAME="pw.7z"
 
@@ -289,7 +289,7 @@ function encodePassword(){
     iwebPasswordSalt=$(echo "${PW_ADMIN_RAW_PW}" | tr '[:upper:]' '[:lower:]')
     pwAdminPasswordSalt=$(echo "${PW_ADMIN_USER}${PW_ADMIN_RAW_PW}" | tr '[:upper:]' '[:lower:]')
 
-    if [ $ALGORITHM == "hexEncoding" ]; then
+    if [ "$ALGORITHM" == "hexEncoding" ]; then
         iwebPasswordHash=$(hexEncoding "$iwebPasswordSalt")
         pwAdminPasswordHash=$(hexEncoding "$pwAdminPasswordSalt")
     else
@@ -647,9 +647,9 @@ function composeStartAndStopScript(){
 
     # Override the 'start' file
     replaceLinesStart "${workspace}/start" "PW_PATH=" "PW_PATH=${workspace}"
-    replaceLinesContain "${workspace}/start" "# display jdbc string here" "${G}http://${HOST}:8080/pwadmin${W}"
+    replaceLinesContain "${workspace}/start" "# display pwadmin url here" "${G}http://${HOST}:8080/pwadmin${W}"
     jdbcCommand="echo \"Use: ${G}jdbc:mariadb://$HOST:3306/$DB_NAME?user=$DB_USER&password=$DB_PASSWORD${W} to connect the DB from outside the Docker container.\""
-    replaceLinesContain "${workspace}/start" "# display pwadmin url here" "${jdbcCommand}"
+    replaceLinesContain "${workspace}/start" "# display jdbc string here" "${jdbcCommand}"
     # TODO: remove this line: echo -e "$jdbcCommand" >> "${workspace}/start"
 
     # Override the test files (9). You should run them in this order.
@@ -684,7 +684,7 @@ function setupGameServer(){
     cat << 'EOF' > "${workspace}"/authd/authd
 #!/bin/sh
 while true; do
-    /home/jdk1.6.0_45/bin/java -cp lib/application.jar:.:lib/commons-collections-3.1.jar:lib/commons-dbcp-1.2.1.jar:lib/commons-logging-1.0.4.jar:lib/commons-pool-1.2.jar:lib/jio.jar:lib/log4j-1.2.9.jar:lib/mysql-connector-java-5.1.10-bin.jar:.:.:/home/jdk1.6.0_45/lib/dt.jar:/home/jdk1.6.0_45/lib/tools.jar authd table.xml
+    "${workspace}"/jdk1.6.0_45/bin/java -cp lib/application.jar:.:lib/commons-collections-3.1.jar:lib/commons-dbcp-1.2.1.jar:lib/commons-logging-1.0.4.jar:lib/commons-pool-1.2.jar:lib/jio.jar:lib/log4j-1.2.9.jar:lib/mysql-connector-java-5.1.10-bin.jar:.:.:/home/jdk1.6.0_45/lib/dt.jar:/home/jdk1.6.0_45/lib/tools.jar authd table.xml
     sleep 2
 done
 EOF

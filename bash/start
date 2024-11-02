@@ -113,8 +113,7 @@ function main() {
 
     "${PW_PATH}/server" clearlogs
 
-    if [ $1 = "trace" ]; then
-        #TODO: enable TRACE log
+    if [ "$1" == "trace" ]; then
         startAuthd
         startGamedbd
         startGacd
