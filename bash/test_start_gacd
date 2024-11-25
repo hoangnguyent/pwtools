@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Anti-Cheat service(GACD) ####################"
+cd "${PW_PATH}"/gacd/
+nohup ./gacd gamesys.conf > "${PW_PATH}"/logs/gacd.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./gacd: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

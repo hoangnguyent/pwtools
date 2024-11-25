@@ -1,0 +1,15 @@
+services:
+  pw173:
+    image: ubuntu:jammy
+    container_name: pw173
+    ports:
+      - "3306:3306"
+      - "8080:8080"
+      - "8081:80"
+      - "29000:29000"
+    volumes:
+      - "D:/game/dockerdata/pw173/home:/home"
+    mem_limit: "6g"
+    stdin_open: true
+    tty: true
+

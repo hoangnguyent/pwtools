@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Log service #################################"
+cd "${PW_PATH}"/logservice
+nohup ./logservice logservice.conf > "${PW_PATH}"/logs/logservice.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./logservice: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Authentication service (AUTHD) #################"
+if [[ -d "${PW_PATH}"/auth/build ]]; then
+    cd "${PW_PATH}"/authd/build; nohup ./authd.sh start 2>&1 | tee "${PW_PATH}"/logs/authd.log &
+elif [[ -d "${PW_PATH}"/authd ]]; then
+    cd "${PW_PATH}"/authd/; nohup ./authd 2>&1 | tee "${PW_PATH}"/logs/authd.log &
+fi

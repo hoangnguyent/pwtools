@@ -1,0 +1,12 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Unique Name service(UNIQUENAMED) ############"
+# Unique Name service #
+cd "${PW_PATH}"/uniquenamed
+nohup ./uniquenamed gamesys.conf > "${PW_PATH}"/logs/uniquename.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./uniquenamed: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

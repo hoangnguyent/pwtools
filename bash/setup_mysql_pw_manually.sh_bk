@@ -1,0 +1,249 @@
+#!/bin/bash
+
+# Declare resources
+DIR_MOUNT=/home # This must be one of your mount folders.
+DIR_WORKING="" # As you wish. "" is also fine.
+
+# Declare database configuration
+DB_NAME=pw
+DB_USER=dba
+DB_PASSWORD=dba
+HOST=127.0.0.1
+
+# Declare web tool configuration
+PW_ADMIN_USER="admin"
+PW_ADMIN_RAW_PW="admin"
+PW_ADMIN_MAIL="admin@gmail.com"
+
+# Declare hash algorithm
+#ALGORITHM="hexEncoding"
+ALGORITHM="md5AndThenBase64encoding"
+
+TIMEZONE=Asia/Ho_Chi_Minh
+
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+
+# Common variables
+startTime=""
+now=$(date +%Y%m%d_%H%M%S)
+currentSQLDate=$(date +'%F %T');
+iwebPasswordHash=""
+pwAdminPasswordHash=""
+workspace=""
+if [ -n "${DIR_MOUNT}" ]; then
+    workspace="${DIR_MOUNT}"
+fi
+if [ -n "${DIR_WORKING}" ]; then
+    if [ -n "${workspace}" ]; then
+        workspace="${workspace}/${DIR_WORKING}"
+    else
+        workspace="${DIR_WORKING}"
+    fi
+fi
+if [[ "${workspace}" != /* ]]; then
+    workspace="/${workspace}"
+fi
+setupFolder="${workspace}/${now}_setup"
+setupLogFile="${workspace}/${now}_setup.log"
+mkdir -p "${setupFolder}"
+mkdir -p "${setupFolder}/pw"
+chmod -R 777 "${workspace}"
+
+# Text colors
+B="[40;36m"
+W="[0m"
+G="[1;32m"
+R="[1;31m"
+Y="[1;33m"
+P="[1;95m"
+
+function switchTimezone(){
+    ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+}
+
+function installSeverPackages(){
+
+    yum update -y && update upgrade -y
+    yum install -y bash curl nano wget
+
+    # This is a tool to download specific folders from a Github repository.
+    curl -sSLfo ./fetch https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64
+    chmod 777 ./fetch
+
+}
+
+function encodePassword(){
+
+    # salt = user + pass
+    iwebPasswordSalt=$(echo "${PW_ADMIN_RAW_PW}" | tr '[:upper:]' '[:lower:]')
+    pwAdminPasswordSalt=$(echo "${PW_ADMIN_USER}${PW_ADMIN_RAW_PW}" | tr '[:upper:]' '[:lower:]')
+
+    if [ "$ALGORITHM" == "hexEncoding" ]; then
+        iwebPasswordHash=$(hexEncoding "$iwebPasswordSalt")
+        pwAdminPasswordHash=$(hexEncoding "$pwAdminPasswordSalt")
+    else
+        iwebPasswordHash=$(echo -n "$PW_ADMIN_RAW_PW" | openssl dgst -md5 -binary | base64)
+        pwAdminPasswordHash=$(echo -n "$pwAdminPasswordSalt" | openssl dgst -md5 -binary | base64)
+    fi
+
+}
+
+function hexEncoding() {
+    local salt="$1"
+    local md5sum
+    local hex_string="0x"
+
+    # Generate MD5 hash
+    md5sum=$(echo -n "$salt" | md5sum | awk '{print $1}')
+
+    # Convert to uppercase and format as needed
+    for (( i=0; i<${#md5sum}; i+=2 )); do
+        hex_byte="${md5sum:$i:2}"
+        hex_string+="$hex_byte"
+    done
+
+    echo "$hex_string"
+}
+
+function setupDb() {
+
+    ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/pwa.sql" "${setupFolder}/pwa.sql"
+
+    # Create the database and insert 1 first record.
+    mysql -u"root" -p"123456" <<EOF
+        DROP DATABASE IF EXISTS ${DB_NAME};
+        CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EOF
+
+    mysql -u"root" -p"123456" "${DB_NAME}" < "${setupFolder}/pwa.sql"
+
+    mysql -u"root" -p"123456" "${DB_NAME}" <<EOF
+        CALL adduser("${PW_ADMIN_USER}", "${pwAdminPasswordHash}", "0", "0", "super admin", "0", "${PW_ADMIN_MAIL}", "0", "0", "0", "0", "0", "0", "0", "${currentSQLDate}", " ", "${pwAdminPasswordHash}");
+EOF
+
+    lastInsertedUserId=$(mysql -u"root" -p"123456" "${DB_NAME}" -se "SELECT ID from users WHERE name=\"$PW_ADMIN_USER\"");
+    echo "last inserted id: ${lastInsertedUserId}";
+    if [[ "${lastInsertedUserId}" =~ ^[0-9]+$ ]]; then
+        mysql -u"root" -p"123456" "${DB_NAME}" <<EOF
+            CALL addGM("${lastInsertedUserId}", "1");
+            INSERT INTO usecashnow (userid, zoneid, sn, aid, point, cash, status, creatime) VALUES ("${lastInsertedUserId}", "1", "0", "1", "0", "100000", "1", "${currentSQLDate}") ON DUPLICATE KEY UPDATE cash = cash + 100000;
+EOF
+    fi
+
+}
+
+function enableToConnectDbFromOutside(){
+
+    # Grant permissions
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = 'localhost');")
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'localhost';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'localhost';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '${HOST}');")
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'${HOST}';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'${HOST}' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'${HOST}';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'${HOST}';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '%');")
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'%';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'%';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '172.17.0.1');") # these are for Docker container only
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'172.17.0.1';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'172.17.0.1' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'172.17.0.1';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'172.17.0.1';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '172.18.0.1');") # these are for Docker container only
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'172.18.0.1';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'172.18.0.1' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'172.18.0.1';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'172.18.0.1';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '172.19.0.1');") # these are for Docker container only
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'172.19.0.1';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'172.19.0.1' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'172.19.0.1';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'172.19.0.1';"
+
+    user_exists=$(mysql -u"root" -p"123456" -se "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '$DB_USER' AND host = '172.20.0.1');") # these are for Docker container only
+    if [ "$user_exists" -eq 1 ]; then
+        mysql -u"root" -p"123456" -e "DROP USER '$DB_USER'@'172.20.0.1';"
+    fi
+    mysql -u"root" -p"123456" -e "CREATE USER '$DB_USER'@'172.20.0.1' IDENTIFIED BY '$DB_PASSWORD';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USER'@'172.20.0.1';"
+    mysql -u"root" -p"123456" -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'172.20.0.1';"
+    mysql -u"root" -p"123456" -e "FLUSH PRIVILEGES;"
+
+    # Allow all IP addresses outside the container.
+    chmod 777 /etc/my.cnf
+    echo -e "[mysqld]" >> /etc/my.cnf
+    echo -e "bind-address = 0.0.0.0" >> /etc/my.cnf
+
+}
+
+function cleanUp(){
+    rm -rf "${setupFolder}"
+    rm -rf /apache-tomcat-7.0.108.tar.gz
+}
+
+function finallyEnd(){
+
+    echo "${G}Script ended!${W}"
+
+    endTime=$(date +%s)
+    elapsedTime=$((endTime - startTime))
+    elapsedMinutes=$((elapsedTime / 60))
+    echo -e "\nTotal time: ${elapsedMinutes} minutes"
+
+}
+
+function main(){
+
+    switchTimezone
+    startTime=$(date +%s)
+
+    echo -e "${G}Script started!${W}"
+    echo -e "Each step requires several minutes so be patient..."
+    trap finallyEnd EXIT
+
+    cd /
+
+    echo -e "\nStep 1: Install the required packages."
+    installSeverPackages
+
+    echo -e "\nStep 2: Encode passwords."
+    encodePassword
+
+    echo -e "\nStep 3: Setup the database."
+    setupDb
+    enableToConnectDbFromOutside
+
+    cleanUp
+
+}
+
+# Execute
+main
+#main >> "$setupLogFile" 2>&1

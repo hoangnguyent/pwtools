@@ -1,0 +1,17 @@
+#!/bin/sh
+
+pkill -9 gs
+pkill -9 gamedbd
+pkill -9 gdeliveryd
+pkill -9 gfactiond
+pkill -9 authd
+pkill -9 uniquenamed
+pkill -9 glinkd
+pkill -9 gacd
+pkill -9 logservices
+pkill -9 start
+pkill -9 java
+service mariadb stop
+sleep 5
+
+echo $"##############################  - DONE! #################################################"

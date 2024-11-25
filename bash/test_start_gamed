@@ -1,0 +1,23 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Load Maps(GS) #########################################"
+cd "${PW_PATH}"/gamed/
+
+if [ -n "$1" ]; then
+    nohup ./gs gs01 > "${PW_PATH}"/logs/gs01.log &
+    nohup ./gs is61 > "${PW_PATH}"/logs/is61.log &
+else
+    IFS=',' read -r -a mapList <<< "$1"
+    for map in "${mapList[@]}"; do
+        "${PW_PATH}"/server start-map ${map}
+    done
+fi
+
+nohup ./gs gs01 > "${PW_PATH}"/logs/gs01.log &
+nohup ./gs is61 > "${PW_PATH}"/logs/is61.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./gs: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

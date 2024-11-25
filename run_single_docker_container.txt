@@ -1,0 +1,12 @@
+2024/11/23
+
+## Run a container
+# ubuntu:jammy (22.04)
+docker run -uroot -it -v D:/game/dockerdata/pw173/your_dir:/your_dir --name pw173 -p 3306:3306 -p 8080:8080 -p 29000:29000 --memory="6g" ubuntu:jammy /bin/bash
+
+# Docker container is cached. You should completely remove a container and its data with these:
+docker stop pw173
+docker rm pw173
+docker volume prune -f
+
+Finished

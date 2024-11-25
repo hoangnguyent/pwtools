@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Delivery service(GDELIVERYD) ################"
+cd "${PW_PATH}"/gdeliveryd/
+nohup ./gdeliveryd gamesys.conf > "${PW_PATH}"/logs/gdeliveryd.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./gdeliveryd: No such file or directory, please re-check the C++ libraries installation step."
+echo ""

@@ -1,0 +1,153 @@
+#!/bin/bash
+
+PW_PATH=/root/home
+LOG_PATH="${PW_PATH}/logs"
+
+# Text colors
+B="[40;36m"
+W="[0m"
+G="[1;32m"
+R="[1;31m"
+Y="[1;33m"
+P="[1;95m"
+
+function loadMaps() {
+    local maps=$1
+    IFS=',' read -r -a mapList <<< "${maps}"
+    for map in "${mapList[@]}"; do
+        "${PW_PATH}/server" start-map "${map}"
+    done
+}
+
+function startAuthd() {
+
+    echo "##############################  - Start the Authentication service (AUTHD) ##############"
+    if [[ -d "${PW_PATH}"/auth/build ]]; then
+        cd "${PW_PATH}"/authd/build; nohup ./authd.sh start 2>&1 | tee "${PW_PATH}"/logs/authd.log &
+    elif [[ -d "${PW_PATH}"/authd ]]; then
+        cd "${PW_PATH}"/authd/; nohup ./authd 2>&1 | tee "${PW_PATH}"/logs/authd.log &
+    fi
+
+    sleep 2
+    echo ""
+}
+
+function startGamedbd(){
+
+    echo "##############################  - Start the Game Data service(GAMEDBD) ##################"
+    cd "${PW_PATH}"/gamedbd/
+    nohup ./gamedbd gamesys.conf 2>&1 | tee $LOG_PATH/gamedbd.log &
+    sleep 2
+    echo ""
+}
+
+function startGacd(){
+
+    echo "##############################  - Start the Anti-Cheat service(GACD) ####################"
+    cd "${PW_PATH}"/gacd/
+    nohup ./gacd gamesys.conf 2>&1 | tee $LOG_PATH/gacd.log &
+    sleep 2
+    echo ""
+}
+
+function startUniquenamed(){
+
+    echo "##############################  - Start the Unique Name service(UNIQUENAMED) ############"
+    cd "${PW_PATH}"/uniquenamed
+    nohup ./uniquenamed gamesys.conf 2>&1 | tee $LOG_PATH/uniquename.log &
+    sleep 2
+    echo ""
+}
+
+function startGfactiond(){
+
+    echo "##############################  - Start the Gang service(GFACTIOND) #####################"
+    cd "${PW_PATH}"/gfactiond/
+    nohup ./gfactiond gamesys.conf 2>&1 | tee $LOG_PATH/gfactiond.log &
+    sleep 2
+    echo ""
+}
+
+function startLogservice(){
+
+    echo "##############################  - Start the Log service #################################"
+    cd "${PW_PATH}"/logservice
+    nohup ./logservice logservice.conf 2>&1 | tee $LOG_PATH/logservice.log &
+    sleep 2
+    echo ""
+}
+
+function startGlinkd(){
+
+    echo "##############################  - Start the Login relation service(GLINKD) ##############"
+    cd "${PW_PATH}"/glinkd/
+    nohup ./glinkd gamesys.conf 1 2>&1 | tee $LOG_PATH/glinkd1.log &
+    sleep 3
+    echo ""
+}
+
+function startGdeliveryd(){
+
+    echo "##############################  - Start the Delivery service(GDELIVERYD) ################"
+    cd "${PW_PATH}"/gdeliveryd/
+    nohup ./gdeliveryd gamesys.conf 2>&1 | tee $LOG_PATH/gdeliveryd.log &
+    sleep 2
+    echo ""
+}
+
+function startWebTools(){
+
+    echo "##############################  - WEB TOOLS #############################################"
+    nohup sh -c "${PW_PATH}/tomcat/bin/catalina.sh start" &
+    # display pwadmin url here
+    echo "##############################  - DONE! #################################################"
+
+    # Starting other tools are placed here
+}
+
+function main() {
+    echo "${G}Script started!${W}"
+    trap 'echo "${G}Script ended!${W}"' EXIT
+
+    service mariadb start
+    # display jdbc string here
+
+    "${PW_PATH}/server" clearlogs
+
+    if [ "$1" == "trace" ]; then
+        startAuthd
+        startGamedbd
+        startGacd
+        startUniquenamed
+        startGfactiond
+        startLogservice
+
+        local maps=$2
+        if [ -z "${maps}" ]; then
+            maps="gs01,is61,is69"
+        fi
+        loadMaps "${maps}"
+
+        startGdeliveryd
+        startGlinkd
+    else
+        local maps=$1
+        if [ -z "${maps}" ]; then
+            maps="gs01,is61,is69"
+        fi
+        "${PW_PATH}/server" start no-maps &>/dev/null
+        loadMaps "${maps}"
+    fi
+
+    startWebTools
+
+    second=5
+    echo -e "\nWait $second seconds for stable...\n"
+    sleep $second
+    echo -e "DONE!"
+
+    # display warning about hosts here
+}
+
+# Execute
+main "$@"

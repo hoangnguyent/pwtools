@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_PATH=/home
+
+echo "##############################  - Start the Game Data service(GAMEDBD) ##################"
+cd "${PW_PATH}"/gamedbd/
+nohup ./gamedbd gamesys.conf > "${PW_PATH}"/logs/gamedbd.log &
+
+echo "Log files should be generated."
+echo "If you see the error: ./gamedbd: No such file or directory, please re-check the C++ libraries installation step."
+echo ""
