@@ -98,6 +98,7 @@ function startGdeliveryd(){
 function startWebTools(){
 
     echo "##############################  - WEB TOOLS #############################################"
+    rm -rf "${PW_PATH}/tomcat/logs"/*
     nohup sh -c "${PW_PATH}/tomcat/bin/catalina.sh start" &
     # display pwadmin url here
     echo "##############################  - DONE! #################################################"

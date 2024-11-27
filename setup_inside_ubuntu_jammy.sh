@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Declare your virtualization info.
+YOUR_VIRTUALIZATION=vmware # "docker" or "vmware" or empty
+YOUR_VIRTUALIZATION_IP=192.168.23.131
+# If this IP is not localhost or 127.0.0.1, you may have to add it to /etc/hosts. Remember, this file is reset every time the Container reboots.
+
 # Declare resources
 DIR_MOUNT=/home # This must be one of your mount folders.
 DIR_WORKING=/game # As you wish. "" is also fine.
@@ -18,11 +23,6 @@ STRUCTURE='{
     "logservice"    : "dir",
     "uniquenamed"   : "dir"
 }' # Do NOT left any trailing comma!!!
-
-# Declare your virtualization info.
-# If this IP is not localhost or 127.0.0.1, you may have to add it to /etc/hosts. Remember, this file is reset every time the Container reboots.
-YOUR_VIRTUALIZATION_IP=192.168.23.131
-YOUR_VIRTUALIZATION="" # "docker" or "vmware" or "virtualbox" or empty
 
 # Declare database configuration
 DB_NAME=pw
@@ -68,6 +68,7 @@ fi
 if [[ "${workspace}" != /* ]]; then
     workspace="/${workspace}"
 fi
+workspace=$(echo "${workspace}" | sed 's|//|/|g')
 setupFolder="${workspace}/${now}_setup"
 setupLogFile="${workspace}/${now}_setup.log"
 mkdir -p "${setupFolder}"
@@ -83,7 +84,7 @@ Y="[1;33m"
 P="[1;95m"
 
 hostnamesResolution="127.0.0.1 AUDATA\n127.0.0.1 audb\n127.0.0.1 aumanager\n127.0.0.1 auth\n127.0.0.1 backup\n127.0.0.1 database\n127.0.0.1 delivery\n127.0.0.1 game1\n127.0.0.1 game2\n127.0.0.1 gm_server\n127.0.0.1 gmserver\n127.0.0.1 link1\n127.0.0.1 LOCAL0\n127.0.0.1 localhost\n127.0.0.1 localhost.localdomain\n127.0.0.1 LogServer\n127.0.0.1 manager\n127.0.0.1 PW-Server"
-#hostCommand="if ! grep -q \"127.0.0.1 AUDATA\" /etc/hosts; then echo \"Docker Container reverts the /etc/hosts whenever it restarts. We are re-adding the hostnames resolution automatically...\"; echo -e \"${hostnamesResolution}\" >> /etc/hosts; fi"
+#hostCommand="if ! grep -q \"127.0.0.1 AUDATA\" /etc/hosts; then echo \"The Docker container reverts the /etc/hosts whenever it restarts. We are re-adding the hostnames resolution automatically...\"; echo -e \"${hostnamesResolution}\" >> /etc/hosts; fi"
 
 function downloadGameServer(){
     #wget -c $DOWNLOAD_URL -O "${setupFolder}/${YOUR_COMPRESSED_FILE}"
@@ -193,9 +194,8 @@ function installSeverPackages(){
 function installDevPackages(){
 
     apt install -y aptitude
-    aptitude install -y build-essential
-    aptitude install -y build-essential gcc-multilib:i386 libx11-dev:i386 libssl-dev:i386 libstdc++5:i386 libstdc++6:i386 libgcc1:i386 libxml2:i386 libncurses5:i386 libc6:i386 zlib1g:i386
-    aptitude install -y libnss-db libnss-nisplus libnss-nis
+    aptitude install -y build-essential gcc-multilib:i386 libstdc++5:i386 libstdc++6:i386 libgcc1:i386 libxml2:i386 libncurses5:i386 libc6:i386
+    aptitude install -y libnss-db libnss-nisplus libnss-nis zlib1g
 
     echo -e "Download additional libraries."
     ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/additional-libs" "${setupFolder}/additional-libs"
