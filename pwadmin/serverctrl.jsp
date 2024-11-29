@@ -22,14 +22,13 @@
 	{
 		Process p;
 		String command;
-		File working_directory;
+		File working_directory = new File(pw_server_path);
 
 		if(request.getParameter("process").compareTo("stopserver") == 0)
 		{
 			try
 			{
 				command = pw_server_path + "gamedbd/./gamedbd " + pw_server_path + "gamedbd/gamesys.conf exportclsconfig";
-				working_directory = new File(pw_server_path + "gamedbd/");
 				p = Runtime.getRuntime().exec(command, null, working_directory);
 				p.waitFor();
 				Thread.sleep(1000);
@@ -55,6 +54,7 @@
 			}
 			catch(Exception e)
 			{
+				e.printStackTrace();
 				message = "<font color=\"#ee0000\"><b>Turning Off Server Failed</b></font>";
 			}
 		}
@@ -64,7 +64,6 @@
 			try
 			{
 				command = pw_server_path + "server start no-maps";
-				working_directory = new File(pw_server_path);
 				Runtime.getRuntime().exec("chmod 777 " + pw_server_path + "server");
 				Runtime.getRuntime().exec(command, null, working_directory);
 
@@ -80,6 +79,7 @@
 			}
 			catch(Exception e)
 			{
+				e.printStackTrace();
 				message = "<font color=\"#ee0000\"><b>Starting Up Server Failed: " + e.getMessage() + " </b></font>";
 			}
 		}
@@ -100,7 +100,8 @@
 			}
 			catch(Exception e)
 			{
-				message = "<font color=\"#ee0000\"><b>Setting Timer to stop Maps Failed</b></font>";
+				e.printStackTrace();
+				message = "<font color=\"#ee0000\"><b>Setting Timer to stop Maps Failed: " + e.getMessage() + " </b></font>";
 			}
 		}
 
@@ -111,14 +112,16 @@
 				String[] maps = request.getParameterValues("map");
 				for(int i=0; i<maps.length; i++)
 				{
-					Runtime.getRuntime().exec("kill " +  maps[i]);
+					command = pw_server_path + "server stop-map " +  maps[i];
+					Runtime.getRuntime().exec(command, null, working_directory);
 					Thread.sleep(1000);
 				}
-				message = "<font color=\"#00cc00\"><b>Map(s) Stopped</b></font>";
+				message = "<font color=\"#00cc00\"><b>Map(s) Stopped: " + String.join(",", maps) +  "</b></font>";
 			}
 			catch(Exception e)
 			{
-				message = "<font color=\"#ee0000\"><b>Stopping Map(s) Failed</b></font>";
+				e.printStackTrace();
+				message = "<font color=\"#ee0000\"><b>Stopping Map(s) Failed: " + e.getMessage() + " </b></font>";
 			}
 		}
 
@@ -139,7 +142,6 @@
 				fw.close();
 
 				command = "sh " + pw_server_path + "./iweb_map.sh";
-				working_directory = new File(pw_server_path);
 				Runtime.getRuntime().exec("chmod 755 " + pw_server_path + "iweb_map.sh");
 				Runtime.getRuntime().exec(command, null, working_directory);
 				Thread.sleep(1000*maps.length+1);
@@ -148,7 +150,7 @@
 			}
 			catch(Exception e)
 			{
-				f.delete();
+				e.printStackTrace();
 				message = "<font color=\"#ee0000\"><b>Starting Map(s) Failed</b></font>";
 			}
 		}
@@ -188,7 +190,6 @@ fw.write("sync");
 					fw.close();
 
 					command = "sh " + pw_server_path + "./pw_backup.sh";
-					working_directory = new File(pw_server_path);
 					Runtime.getRuntime().exec("chmod 755 " + pw_server_path + "pw_backup.sh");
 					Runtime.getRuntime().exec(command, null, working_directory);
 
@@ -866,9 +867,9 @@ fw.write("sync");
 				<%
 					for(int i=0; i<maps.length; i++)
 					{
-						if(maps[i][0].compareTo("0") != 0)
+						if(!"0".equals(maps[i][0]))
 						{
-							out.println("<option value=\"" + maps[i][0] + "\">" + maps[i][1] + " : " + maps[i][2] + "</option>");
+							out.println("<option value=\"" + maps[i][1] + "\">" + maps[i][1] + " : " + maps[i][2] + "</option>");
 						}
 					}
 				%>
