@@ -782,11 +782,12 @@ function composeStartAndStopScript(){
 function setupGameServer(){
 
     # Override file /authd/authd. Sometimes this file stays in /build folder.
-    path_table_xml=$(find "${workspace}/authd" -name "table.xml" -print -quit)
+    path_table_xml=$(find "${workspace}/authd" -name "config.xml" -print -quit)
 
     if [ -n "${path_table_xml}" ]; then
         export JAVA_LOCATION=$(find /usr/lib/jvm -type d -name "java-*-openjdk*" -print -quit)
         authd_path=$(dirname "${path_table_xml}")
+        path_table_xml="${authd_path}/table.xml"
         cat << EOF > "${authd_path}/authd"
 #!/bin/sh
 while true; do
@@ -833,6 +834,9 @@ log4j.rootLogger=trace, CONSOLE, SYSLOG
     # Override file /gamed/gs.conf
     replaceLinesStart "${workspace}/gamed/gs.conf" "Root" "Root = ${workspace}/gamed/config"
     replaceLineStartInBlock "${workspace}/gamed/gs.conf" "[MsgTCPSession]" "address" "address = 127.0.0.1"
+
+    # Override file /gamed/gsalias.conf
+    replaceLinesStart "${workspace}/gamed/gsalias.conf" "Root" "Root = ./config/"
 
     # Override file /gamedbd/gamesys.conf
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "homedir" "homedir = ${workspace}/gamedbd/dbhome"
