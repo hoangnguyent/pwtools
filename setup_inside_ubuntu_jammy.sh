@@ -786,6 +786,7 @@ function setupGameServer(){
     mv "${workspace}/authd" "${workspace}/authd_original" 
     echo -e "Download [authd]."
     ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/authd" "${workspace}/authd"
+    chmod -R 755 "${workspace}/authd"
 
     # Override file /authd/authd.
     path_table_xml=$(find "${workspace}/authd" -name "table.xml" -print -quit)
