@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="rpcalls.xsl"?>
+
+<application namespace="GNET">
+
+	<!--  ****************************************************************************  -->
+	<!--  Protocols and Rpcs used only in Linkd Deliveryd and Client				 	-->
+	<!--  Protocols and Rpcs typeid is 1 - 64 , 128-500									-->
+	<!--  ****************************************************************************  -->
+
+	<protocol debug="1" name="StatusAnnounce" maxsize="32" prior="2" type="6">
+		<variable name="userid" type="int" />
+		<variable name="localsid" type="int" />
+		<variable name="status" type="byte" />
+	</protocol>
+	
+	<protocol debug="1"  name="KickoutUser" maxsize="32" prior="2" type="10">
+		<variable name="userid" type="int"/>
+		<variable name="localsid" type="int"/>
+		<variable name="cause" type="byte" default="32"/>
+	</protocol>
+			
+	<rpcdata name="UserLoginArg">
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="localsid" type="int" default="0"/>
+		<variable name="blkickuser" type="byte"	default="0"/>
+		<variable name="freecreatime" type="int" default="0"/>
+	</rpcdata>  
+	<rpcdata name="UserLoginRes">
+		<variable name="retcode" type="byte" default="-1"/>
+		<variable name="remain_playtime" type="int" default="0"/>
+		<variable name="func" type="int" default="0"/>
+		<variable name="funcparm" type="int" default="0"/>
+		<variable name="blIsGM" type="byte"/>
+		<variable name="free_time_left" type="int" default="0"/>
+		<variable name="free_time_end" type="int" default="0"/>
+		<variable name="creatime" type="int" default="0"/>
+		<variable name="adduppoint" type="int" default="0"/>
+		<variable name="soldpoint" type="int" default="0"/>
+	</rpcdata> 
+	<rpc debug="1" name="UserLogin" type="15" argument="UserLoginArg" result="UserLoginRes" maxsize="128" prior="2" timeout="10"/>
+
+	<rpcdata name="UserLogoutArg">
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="localsid" type="int" default="0"/>
+	</rpcdata>  
+	<rpcdata name="UserLogoutRes">
+		<variable name="retcode" type="byte" default="-1"/>
+	</rpcdata>
+	<rpc debug="0" name="UserLogout" type="33" argument="UserLogoutArg" result="UserLogoutRes" maxsize="128" prior="2" timeout="10"/>
+
+	<!--  ****************************************************************************  -->
+	<!--             Protocols and Rpcs used  in authd typeid is 501 - 1000        	    -->
+	<!--  ****************************************************************************  -->
+	<rpcdata name="QueryPasswdArg">
+		<variable name="account" type="Octets" default="Octets(0)"/>
+	</rpcdata>
+	<rpcdata name="QueryPasswdRes">
+		<variable name="retcode" type="byte" default="-1"/>
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="password" type="Octets" default="Octets(0)"/>
+	</rpcdata>
+	<rpc debug="1" name="QueryPasswd" type="501" argument="QueryPasswdArg" result="QueryPasswdRes" maxsize="128" prior="2" timeout="10"/>
+        <rpcdata name="MatrixPasswdArg">
+                <variable name="account" type="Octets" default="Octets(0)"/>
+                <variable name="challenge" type="Octets" default="Octets(0)"/>
+                <variable name="loginip" type="int" default="0"/>
+	</rpcdata>
+	<rpcdata name="MatrixPasswdRes">
+                <variable name="retcode" type="int" default="-1"/>
+                <variable name="userid" type="int" default="-1"/>
+                <variable name="algorithm" type="int" default="0"/>
+                <variable name="response" type="Octets" default="Octets(0)"/>
+                <variable name="matrix" type="Octets" default="Octets(0)"/>
+        </rpcdata>
+        <rpc debug="0" name="MatrixPasswd" type="550" argument="MatrixPasswdArg" result="MatrixPasswdRes" maxsize="512" prior="1" 
+timeout="30"/>
+
+        <protocol debug="0" name="MatrixFailure" maxsize="64" prior="1" type="553">
+                <variable name="userid" type="int" default="0"/>
+                <variable name="loginip" type="int" default="0"/>
+                <variable name="weight" type="int" default="0"/>
+        </protocol>
+
+	
+	<!--***************************************************************************************************-->
+	<!-- GameSystem-->		<!-- The protocols below belongs to GAME system -->				<!-- GameSystem-->
+	<!--***************************************************************************************************-->
+
+	<!--  ****************************************************************************  -->
+	<!--             Protocols and Rpcs used  in authd typeid is 501 - 1000        	    -->
+	<!--  ****************************************************************************  -->
+	<rpcdata name="GQueryPasswdArg">
+		<variable name="account" type="Octets" default="Octets(0)"/>
+		<variable name="challenge" type="Octets" default="Octets(0)"/>
+		<variable name="loginip" type="int" default="0"/>
+	</rpcdata>
+	<rpcdata name="GQueryPasswdRes">
+		<variable name="retcode" type="int" default="-1"/>
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="response" type="Octets" default="Octets(0)"/>
+	</rpcdata>
+	<rpc debug="1" name="GQueryPasswd" type="502" argument="GQueryPasswdArg" result="GQueryPasswdRes" maxsize="128" prior="2" timeout="10"/>
+	
+	<protocol debug="1" name="AnnounceZoneid" maxsize="32" prior="2" type="505">
+		<variable name="zoneid" type="byte"/>
+		<variable name="aid" type="byte" />
+		<variable name="blreset" type="byte"/>
+	</protocol>
+	<protocol debug="1" name="AnnounceZoneid2" maxsize="32" prior="2" type="523">
+		<variable name="zoneid" type="int"/>
+		<variable name="aid" type="int" />
+		<variable name="blreset" type="byte"/>
+
+	<protocol debug="1" name="AnnounceZoneid3" maxsize="32" prior="2" type="527">
+		<variable name="zoneid" type="int"/>
+		<variable name="aid" type="int" />
+		<variable name="blreset" type="byte"/>
+		<variable name="ip1" type="int" />
+		<variable name="ip2" type="int" />
+		<variable name="ip3" type="int" />
+		<variable name="reserved1" type="int" />
+		<variable name="reserved2" type="int" />
+	</protocol>
+
+	</protocol>
+	<protocol debug="0" name="QueryUserPrivilege" type="506" maxsize="32" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="zoneid" type="byte"/>
+	</protocol>
+	<protocol debug="0" name="QueryUserPrivilege2" type="524" maxsize="32" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="zoneid" type="int"/>
+	</protocol>
+	<protocol debug="0" name="QueryUserPrivilege_Re" type="507" maxsize="512" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="auth" type="MByteVector"/>
+	</protocol>
+
+	<rpcdata name="GRoleForbid" attr="vector">
+		<variable name="type" type="byte" default="0"/>
+		<variable name="time" type="int" default="0"/>
+		<variable name="createtime" type="int" default="0"/>
+		<variable name="reason" type="Octets" attr="ref" default="Octets(0)"/>
+	</rpcdata>
+	<protocol debug="0" name="QueryUserForbid" type="508" maxsize="32" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="zoneid" type="byte"/>
+	</protocol>
+	<protocol debug="0" name="QueryUserForbid2" type="525" maxsize="32" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="zoneid" type="int"/>
+	</protocol>
+	<protocol debug="0" name="QueryUserForbid_Re" type="509" maxsize="512" prior="2">
+		<variable name="userid" type="int"/>
+		<variable name="list_type" type="int" default="0"/><!-- 0:forbid list at login, 1:reply of forbid-->
+		<variable name="forbid" type="GRoleForbidVector"/>
+	</protocol>	
+	
+	<rpcdata name="GChangePasswdArg">
+		<variable name="username" type="Octets" default="Octets(0)"/>
+		<variable name="newpwd" type="Octets" default="Octets(0)"/>
+		<variable name="oldpwd" type="Octets" default="Octets(0)"/>
+	</rpcdata>
+	<rpcdata name="GChangePasswdRes">
+		<variable name="retcode" type="int" default="-1"/>
+		<variable name="username" type="Octets" default="Octets(0)"/>
+		<variable name="newpwd" type="Octets" default="Octets(0)"/>
+	</rpcdata>
+	<rpc debug="1" name="GChangePasswd" type="510" argument="GChangePasswdArg" result="GChangePasswdRes" maxsize="128" prior="2" timeout="10"/>
+
+	<rpcdata name="GetAddCashSNArg">
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+	</rpcdata>
+	<rpcdata name="GetAddCashSNRes">
+		<variable name="retcode" type="int" default="-1"/>
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+		<variable name="sn" type="int" default="0"/>
+	</rpcdata>
+	<rpc debug="0" name="GetAddCashSN" type="514" argument="GetAddCashSNArg" result="GetAddCashSNRes" maxsize="128" prior="0" timeout="0"/>
+	<protocol debug="0" name="AddCash" type="515" maxsize="256" prior="0">
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+		<variable name="sn" type="int" default="0"/>
+		<variable name="cash" type="int" default="0"/>
+	</protocol>
+	<protocol debug="0" name="AddCash_Re" type="516" maxsize="256" prior="0">
+		<variable name="retcode" type="int" default="-1"/>
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+		<variable name="sn" type="int" default="0"/>
+	</protocol>
+	<protocol debug="0" name="UseCash" type="517" maxsize="128" prior="0">
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+		<variable name="aid" type="int" default="-1"/>
+		<variable name="point" type="int" default="-1"/>
+		<variable name="cash" type="int" default="-1"/>
+	</protocol>
+	<protocol debug="0" name="UseCash_Re" type="518" maxsize="128" prior="0">
+		<variable name="retcode" type="int" default="-1"/>
+		<variable name="userid" type="int" default="-1"/>
+		<variable name="zoneid" type="int" default="-1"/>
+	</protocol>
+
+	<!--GM related protocols -->
+	<protocol debug="0" name="GMKickoutUser" maxsize="256" prior="2" type="354">
+		<variable name="gmroleid" type="int"/> <!-- roleid of game master -->	
+		<variable name="localsid" type="int"/>
+		<variable name="kickuserid" type="int"/>
+		<variable name="forbid_time" type="int" default="600"/>
+		<variable name="reason" type="Octets" attr="ref" default="Octets()"/>
+	</protocol>
+	<protocol debug="0" name="GMShutup" maxsize="256" prior="2" type="356">
+		<variable name="gmroleid" type="int"/>
+		<variable name="localsid" type="int"/>
+		<variable name="dstuserid" type="int"/>
+		<variable name="forbid_time" type="int"/>
+		<variable name="reason" type="Octets" attr="ref" default="Octets()"/>
+	</protocol>
+	<!-- ******************************** -->
+	<!--  STATES of gauthd client/server  -->
+	<!-- ******************************** -->
+	<state name="GAuthServer" timeout="86400">
+		<proto name="StatusAnnounce" />
+		<proto name="AnnounceZoneid"/>
+		<proto name="AnnounceZoneid2"/>
+		<proto name="AnnounceZoneid3"/>
+		<proto name="QueryUserPrivilege"/>
+		<proto name="QueryUserPrivilege2"/>
+		<proto name="GMKickoutUser"/>
+		<proto name="GMShutup"/>
+
+		<proto name="GQueryPasswd"/>
+		<proto name="GChangePasswd"/>
+		<proto name="UserLogin"/>
+		<proto name="UserLogout"/>
+		<proto name="GetAddCashSN"/>
+		<proto name="AddCash"/>
+		<proto name="AddCash_Re"/>
+		<proto name="UseCash"/>
+		<proto name="UseCash_Re"/>
+	</state>
+
+	<!-- *********************************************************** -->
+	<!-- 						manager for GameAuth	 			 -->
+	<!-- *********************************************************** -->
+	<manager name="GAuthServer" initstate="GAuthServer" identification="GAuthServer"/>
+	
+	<!-- *********************************************************** -->
+	<!-- 					security objects			 			 -->
+	<!-- *********************************************************** -->
+	<security>
+		<entity class="com.goldhuman.Common.Security.NullSecurity" name="NullSecurity" type="0"/>
+		<entity class="com.goldhuman.Common.Security.Random" name="Random" type="1"/>
+		<entity class="com.goldhuman.Common.Security.ARCFourSecurity" name="ARCFourSecurity" type="2"/>
+		<entity class="com.goldhuman.Common.Security.MD5Hash" name="MD5Hash" type="3"/>
+		<entity class="com.goldhuman.Common.Security.HMAC_MD5Hash" name="HMAC_MD5Hash" type="4"/>
+	</security>
+</application>

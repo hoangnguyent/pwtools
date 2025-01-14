@@ -781,13 +781,18 @@ function composeStartAndStopScript(){
 
 function setupGameServer(){
 
-    # Override file /authd/authd. Sometimes this file stays in /build folder.
-    path_table_xml=$(find "${workspace}/authd" -name "config.xml" -print -quit)
+    # Use my authd instead of the original authd
+    echo -e "Backup the original [authd]."
+    mv "${workspace}/authd" "${workspace}/authd_original" 
+    echo -e "Download [authd]."
+    ./fetch --repo="https://github.com/hoangnguyent/pwtools" --ref="main" --source-path="/authd" "${workspace}/authd"
+
+    # Override file /authd/authd.
+    path_table_xml=$(find "${workspace}/authd" -name "table.xml" -print -quit)
 
     if [ -n "${path_table_xml}" ]; then
         export JAVA_LOCATION=$(find /usr/lib/jvm -type d -name "java-*-openjdk*" -print -quit)
         authd_path=$(dirname "${path_table_xml}")
-        path_table_xml="${authd_path}/table.xml"
         cat << EOF > "${authd_path}/authd"
 #!/bin/sh
 while true; do
@@ -796,9 +801,6 @@ while true; do
 done
 EOF
     fi
-
-    echo "authd location is: ${authd_path}"
-    echo "table.xml location is: ${path_table_xml}"
 
     # Override file /authd/authd.conf
     replaceLineStartInBlock "${authd_path}/authd.conf" "[GAuthServer]" "mtrace" "mtrace = ${authd_path}/mtrace.authd"

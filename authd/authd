@@ -1,0 +1,3 @@
+#!/bin/sh
+java -cp lib/jio.jar:lib/application.jar:lib/commons-collections-3.1.jar:lib/commons-dbcp-1.2.1.jar:lib/mysql-connector-java-5.1.10-bin.jar:lib/commons-pool-1.2.jar:lib/commons-logging-1.0.4.jar:lib/log4j-1.2.9.jar:$CLASSPATH authd table.xml
+sleep 2
