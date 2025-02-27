@@ -843,13 +843,13 @@ log4j.rootLogger=trace, CONSOLE, SYSLOG
 
     # Override file /gamedbd/gamesys.conf
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "homedir" "homedir = ${workspace}/gamedbd/dbhome"
-    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "datadir" "datadir = ${workspace}/gamedbd/dbhome/dbdata"
-    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "logdir" "logdir = ${workspace}/gamedbd/dbhome/dblogs"
+    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "datadir" "datadir = dbdata"
+    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "logdir" "logdir = dblogs"
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "backupdir" "backupdir = ${workspace}/gamedbd/dbhome/backup"
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storage]" "cachesize" "cachesize = 99999999"
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "homedir" "homedir = ${workspace}/gamedbd/dbhomewdb"
-    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "datadir" "datadir = ${workspace}/gamedbd/dbhomewdb/dbdata"
-    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "logdir" "logdir = ${workspace}/gamedbd/dbhomewdb/dblogs"
+    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "datadir" "datadir = dbdata"
+    replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "logdir" "logdir = dblogs"
     replaceLineStartInBlock "${workspace}/gamedbd/gamesys.conf" "[storagewdb]" "backupdir" "backupdir = ${workspace}/gamedbd/dbhomewdb/backup"
 
     # Override file /gdeliveryd/gamesys.conf
@@ -904,13 +904,13 @@ log4j.rootLogger=trace, CONSOLE, SYSLOG
 
     # Override /uniquenamed/gamesys.conf
     replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "homedir" "homedir = ${workspace}/uniquenamed/uname"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "datadir" "datadir = ${workspace}/uniquenamed/uname/dbdata"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "logdir" "logdir = ${workspace}/uniquenamed/uname/dblogs"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "datadir" "datadir = dbdata"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "logdir" "logdir = dblogs"
     replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storage]" "backupdir" "backupdir = ${workspace}/uniquenamed/uname/backup"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "homedir" "homedir = ${workspace}/uniquenamed/unamewdb/"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "datadir" "datadir = ${workspace}/uniquenamed/unamewdb/dbdata"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "logdir" "logdir = ${workspace}/uniquenamed/unamewdb/dblogs"
-    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "backupdir" "backupdir = ${workspace}/uniquenamed/unamewdb/backup"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "homedir" "homedir = ${workspace}/uniquenamed/uname"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "datadir" "datadir = dbdata"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "logdir" "logdir = dblogs"
+    replaceLineStartInBlock "${workspace}/uniquenamed/gamesys.conf" "[storagewdb]" "backupdir" "backupdir = ${workspace}/uniquenamed/backup"
 
     # Sync files in folder /gamed/config between client and server. These 9 files should be copied manually.
     # 1. aipolicy.data
